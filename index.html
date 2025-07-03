@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Futebol</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            background-color: #eef2f7;
+            margin: 0;
+            padding: 30px 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2.2em;
+        }
+
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            font-size: 1.6em;
+        }
+
+        .selection-panel {
+            margin-bottom: 30px;
+            background-color: #f8fcfd;
+            border: 1px solid #e0f2f7;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .selection-panel label {
+            font-size: 1.1em;
+            color: #34495e;
+            font-weight: bold;
+        }
+
+        .selection-panel select {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .controls {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 7px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .current-round {
+            background-color: #f8fcfd;
+            border: 1px solid #e0f2f7;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+            min-height: 120px; /* Garante espaço para os resultados */
+        }
+
+        #matches-display {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .match {
+            background-color: #fff;
+            border: 1px solid #dcdcdc;
+            border-radius: 6px;
+            padding: 10px 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+            font-size: 0.95em;
+            min-width: 250px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .match .team-name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .match .score {
+            font-weight: bold;
+            color: #007bff;
+            margin: 0 10px;
+        }
+
+        /* Tabela de Classificação */
+        .classification table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fdfdfd;
+        }
+
+        .classification th, .classification td {
+            padding: 12px 15px;
+            border: 1px solid #ecf0f1;
+            text-align: left;
+            font-size: 0.95em;
+        }
+
+        .classification th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .classification tbody tr:nth-child(even) {
+            background-color: #f7fbfd;
+        }
+
+        .classification tbody tr:hover {
+            background-color: #eaf6fd;
+        }
+
+        /* Estilo para as posições na tabela */
+        /* G4 - Verde */
+        .classification tbody tr:nth-child(1),
+        .classification tbody tr:nth-child(2),
+        .classification tbody tr:nth-child(3),
+        .classification tbody tr:nth-child(4) {
+            background-color: #d4edda;
+            font-weight: bold;
+        }
+        /* Z4 - Vermelho */
+        .classification tbody tr:nth-last-child(1),
+        .classification tbody tr:nth-last-child(2),
+        .classification tbody tr:nth-last-child(3),
+        .classification tbody tr:nth-last-child(4) {
+            background-color: #f8d7da;
+        }
+
+        /* Classes específicas para a Libertadores/Mundial */
+        .group-stage-header {
+            font-size: 1.6em;
+            color: #34495e;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .lib-group-heading {
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 15px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            font-size: 1.3em;
+            text-align: center;
+        }
+
+        .knockout-bracket {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .knockout-bracket .round-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+
+        .knockout-bracket .match {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .champion-display {
+            font-size: 2em;
+            font-weight: bold;
+            color: #28a745;
+            margin-top: 30px;
+            padding: 20px;
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            animation: bounceIn 1s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.1); opacity: 0; }
+            60% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Simulador de Futebol</h1>
+
+        <div class="selection-panel">
+            <label for="championship-select">Escolha o Campeonato:</label>
+            <select id="championship-select">
+                <option value="serie_b">Brasileirão Série B</option>
+                <option value="serie_a">Brasileirão Série A</option>
+                <option value="libertadores">Libertadores</option>
+                <option value="mundial">Super Mundial (Mundial de Clubes)</option>
+            </select>
+        </div>
+
+        <div class="controls">
+            <button id="simulate-button">Simular Próxima Rodada</button>
+            <button id="reset-button">Reiniciar Simulação</button>
+            <button id="simulate-all-button" style="display: none;">Simular Campeonato Inteiro</button>
+        </div>
+
+        <div class="current-round">
+            <h2><span id="round-title">Rodada Atual:</span> <span id="round-number">0</span></h2>
+            <div id="matches-display">
+                <p>Selecione um campeonato e clique em "Simular Próxima Rodada" para começar!</p>
+            </div>
+            <div id="champion-display" class="champion-display" style="display:none;"></div>
+        </div>
+
+        <div class="classification">
+            <h2 id="classification-title">Tabela de Classificação</h2>
+            <table id="classification-table">
+                <thead>
+                    <tr>
+                        <th>Pos.</th>
+                        <th>Time</th>
+                        <th>Pts</th>
+                        <th>J</th>
+                        <th>V</th>
+                        <th>E</th>
+                        <th>D</th>
+                        <th>GP</th>
+                        <th>GC</th>
+                        <th>SG</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    </tbody>
+            </table>
+            <div id="knockout-bracket-display" style="display: none;">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Dados dos Times (2024/2025 - Exemplos e times reais/prováveis) ---
+        const teamsData = {
+            serie_b: [
+                { id: 'ame', name: 'América-MG' }, { id: 'ava', name: 'Avaí' }, { id: 'botsp', name: 'Botafogo-SP' },
+                { id: 'bru', name: 'Brusque' }, { id: 'cea', name: 'Ceará' }, { id: 'cha', name: 'Chapecoense' },
+                { id: 'cor', name: 'Coritiba' }, { id: 'crb', name: 'CRB' }, { id: 'goi', name: 'Goiás' },
+                { id: 'gua', name: 'Guarani' }, { id: 'itu', name: 'Ituano' }, { id: 'juv', name: 'Juventude' },
+                { id: 'mir', name: 'Mirassol' }, { id: 'nov', name: 'Novorizontino' }, { id: 'opm', name: 'Operário-PR' },
+                { id: 'pon', name: 'Ponte Preta' }, { id: 'san', name: 'Santos' }, { id: 'spo', name: 'Sport' },
+                { id: 'vil', name: 'Vila Nova' }, { id: 'vit', name: 'Vitória' },
+            ],
+            serie_a: [
+                { id: 'atl_mg', name: 'Atlético-MG' }, { id: 'atl_go', name: 'Atlético-GO' }, { id: 'bahia', name: 'Bahia' },
+                { id: 'bot_rj', name: 'Botafogo' }, { id: 'brag', name: 'Bragantino' }, { id: 'cor', name: 'Corinthians' },
+                { id: 'cru', name: 'Cruzeiro' }, { id: 'cui', name: 'Cuiabá' }, { id: 'fla', name: 'Flamengo' },
+                { id: 'flu', name: 'Fluminense' }, { id: 'fort', name: 'Fortaleza' }, { id: 'gre', name: 'Grêmio' },
+                { id: 'int', name: 'Internacional' }, { id: 'juv', name: 'Juventude' }, { id: 'pal', name: 'Palmeiras' },
+                { id: 'ath_pr', name: 'Athletico-PR' }, { id: 'sao', name: 'São Paulo' }, { id: 'vas', name: 'Vasco' },
+                { id: 'vit', name: 'Vitória' }, { id: 'cric', name: 'Criciúma' }
+            ],
+            libertadores: [ // 32 times para fase de grupos (baseado em 2024, exemplo)
+                { id: 'river_arg', name: 'River Plate (ARG)' }, { id: 'flamengo_bra', name: 'Flamengo (BRA)' }, { id: 'palmeiras_bra', name: 'Palmeiras (BRA)' }, { id: 'fluminense_bra', name: 'Fluminense (BRA)' },
+                { id: 'atleticomg_bra', name: 'Atlético-MG (BRA)' }, { id: 'saopaulo_bra', name: 'São Paulo (BRA)' }, { id: 'gremio_bra', name: 'Grêmio (BRA)' }, { id: 'internacional_bra', name: 'Internacional (BRA)' },
+                { id: 'athpr_bra', name: 'Athletico-PR (BRA)' }, { id: 'botafogo_bra', name: 'Botafogo (BRA)' }, { id: 'bragantino_bra', name: 'Bragantino (BRA)' }, { id: 'nacional_uru', name: 'Nacional (URU)' },
+                { id: 'penarol_uru', name: 'Peñarol (URU)' }, { id: 'bocajrs_arg', name: 'Boca Juniors (ARG)' }, { id: 'racing_arg', name: 'Racing (ARG)' }, { id: 'sanlorenzo_arg', name: 'San Lorenzo (ARG)' },
+                { id: 'colo_chi', name: 'Colo-Colo (CHI)' }, { id: 'ucatolica_chi', name: 'U. Católica (CHI)' }, { id: 'olimpia_par', name: 'Olimpia (PAR)' }, { id: 'libertad_par', name: 'Libertad (PAR)' },
+                { id: 'cerro_par', name: 'Cerro Porteño (PAR)' }, { id: 'ldu_equ', name: 'LDU Quito (EQU)' }, { id: 'indep_valle_equ', name: 'Indep. del Valle (ECU)' }, { id: 'atl_nacional_col', name: 'Atl. Nacional (COL)' },
+                { id: 'millonarios_col', name: 'Millonarios (COL)' }, { id: 'alianza_per', name: 'Alianza Lima (PER)' }, { id: 'uni_dep_per', name: 'U. Deportes (PER)' }, { id: 'barcelona_ecu', name: 'Barcelona (ECU)' },
+                { id: 'bolivar_bol', name: 'Bolívar (BOL)' }, { id: 'strongest_bol', name: 'The Strongest (BOL)' }, { id: 'dep_tachira_ven', name: 'Dep. Táchira (VEN)' }, { id: 'rosario_arg', name: 'Rosario Central (ARG)' }
+            ],
+            mundial: [ // 32 times para o novo formato de 2025 (mais realistas/prováveis)
+                // UEFA (12)
+                { id: 'real_madrid', name: 'Real Madrid (ESP)' }, { id: 'man_city', name: 'Man. City (ING)' }, { id: 'chelsea', name: 'Chelsea (ING)' },
+                { id: 'bayern_munich', name: 'Bayern de Munique (ALE)' }, { id: 'psg', name: 'PSG (FRA)' }, { id: 'inter_milao', name: 'Inter de Milão (ITA)' },
+                { id: 'porto', name: 'Porto (POR)' }, { id: 'benfica', name: 'Benfica (POR)' }, { id: 'dortmund', name: 'Borussia Dortmund (ALE)' },
+                { id: 'juventus', name: 'Juventus (ITA)' }, { id: 'atl_madrid', name: 'Atlético de Madrid (ESP)' }, { id: 'red_bull_salzburg', name: 'RB Salzburg (AUT)' },
+                // CONMEBOL (6)
+                { id: 'palmeiras_mund', name: 'Palmeiras (BRA)' }, { id: 'flamengo_mund', name: 'Flamengo (BRA)' }, { id: 'fluminense_mund', name: 'Fluminense (BRA)' },
+                { id: 'river_plate_mund', name: 'River Plate (ARG)' }, { id: 'boca_juniors_mund', name: 'Boca Juniors (ARG)' }, { id: 'nacional_uru_mund', name: 'Nacional (URU)' },
+                // CONCACAF (4)
+                { id: 'monterrey', name: 'Monterrey (MEX)' }, { id: 'seattle_sounders', name: 'Seattle Sounders (EUA)' }, { id: 'leon_mex', name: 'León (MEX)' }, { id: 'pachuca', name: 'Pachuca (MEX)' },
+                // CAF (4)
+                { id: 'al_ahly', name: 'Al Ahly (EGI)' }, { id: 'wydad_ac', name: 'Wydad AC (MAR)' }, { id: 'esperance_tunis', name: 'Esperance ST (TUN)' }, { id: 'mamelodi_sundowns', name: 'Mamelodi (RSA)' },
+                // AFC (4)
+                { id: 'al_hilal', name: 'Al-Hilal (SAU)' }, { id: 'urawa_red_diamonds', name: 'Urawa Red Diamonds (JAP)' }, { id: 'al_ain', name: 'Al-Ain (EAU)' }, { id: 'jeonbuk_motors', name: 'Jeonbuk Motors (COR)' },
+                // OFC (1)
+                { id: 'auckland_city', name: 'Auckland City (NZL)' },
+                // País Sede (1)
+                { id: 'eua_sede', name: 'País Sede (EUA)' } // Time a ser definido, por enquanto representativo
+            ]
+        };
+
+        // --- Variáveis de Estado Global ---
+        let currentChampionship = 'serie_b';
+        let teams = []; // Lista de times com estatísticas (varia conforme o campeonato)
+        let currentRound = 0;
+        let totalRounds = 38;
+        let simulationPhase = 'group_stage'; // 'group_stage', 'round_of_16', 'quarter_finals', 'semi_finals', 'final', 'completed'
+        let knockoutParticipants = []; // Times que avançam para as fases de mata-mata
+        let lastRoundWinners = []; // Vencedores da rodada anterior no mata-mata
+        let currentGroups = {}; // Para armazenar os grupos do torneio atual (Libertadores/Mundial)
+
+        // --- Elementos HTML ---
+        const championshipSelect = document.getElementById('championship-select');
+        const simulateButton = document.getElementById('simulate-button');
+        const resetButton = document.getElementById('reset-button');
+        const simulateAllButton = document.getElementById('simulate-all-button');
+        const roundNumberSpan = document.getElementById('round-number');
+        const roundTitleSpan = document.getElementById('round-title');
+        const matchesDisplay = document.getElementById('matches-display');
+        const classificationTitle = document.getElementById('classification-title');
+        const tableBody = document.getElementById('table-body');
+        const knockoutBracketDisplay = document.getElementById('knockout-bracket-display');
+        const championDisplay = document.getElementById('champion-display');
+
+        // --- Funções Auxiliares Comuns ---
+
+        function getRandomScore() {
+            return Math.floor(Math.random() * 4); // Placar de 0 a 3 gols
+        }
+
+        // Embaralha um array (algoritmo de Fisher-Yates)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Renderiza a tabela de classificação na UI (para pontos corridos e fase de grupos)
+        function renderClassificationTable() {
+            tableBody.innerHTML = '';
+            knockoutBracketDisplay.style.display = 'none'; // Esconde a chave de mata-mata
+            championDisplay.style.display = 'none'; // Esconde o campeão
+
+            if (currentChampionship === 'serie_a' || currentChampionship === 'serie_b') {
+                classificationTitle.textContent = 'Tabela de Classificação';
+                document.getElementById('classification-table').style.display = 'table';
+                teams.sort((a, b) => {
+                    if (b.points !== a.points) return b.points - a.points;
+                    if (b.wins !== a.wins) return b.wins - a.wins;
+                    if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
+                    if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
+                    return a.name.localeCompare(b.name);
+                });
+
+                teams.forEach((team, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${team.name}</td>
+                        <td>${team.points}</td>
+                        <td>${team.games}</td>
+                        <td>${team.wins}</td>
+                        <td>${team.draws}</td>
+                        <td>${team.losses}</td>
+                        <td>${team.goalsFor}</td>
+                        <td>${team.goalsAgainst}</td>
+                        <td>${team.goalDifference}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } else if ((currentChampionship === 'libertadores' || currentChampionship === 'mundial') && simulationPhase === 'group_stage') {
+                classificationTitle.textContent = 'Classificação da Fase de Grupos';
+                document.getElementById('classification-table').style.display = 'table';
+                
+                tableBody.innerHTML = ''; // Limpa a tabela para cada grupo
+
+                // Itera sobre os grupos e os times de cada um
+                for (const groupName in currentGroups) {
+                    const groupTeams = Object.values(currentGroups[groupName]); // Pega os objetos de time do grupo
+                    groupTeams.sort((a, b) => {
+                        if (b.points !== a.points) return b.points - a.points;
+                        if (b.wins !== a.wins) return b.wins - a.wins;
+                        if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
+                        if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
+                        return a.name.localeCompare(b.name);
+                    });
+
+                    const groupHeading = document.createElement('tr');
+                    groupHeading.innerHTML = `<td colspan="10" class="lib-group-heading">Grupo ${groupName}</td>`;
+                    tableBody.appendChild(groupHeading);
+
+                    groupTeams.forEach((team, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${team.name}</td>
+                            <td>${team.points}</td>
+                            <td>${team.games}</td>
+                            <td>${team.wins}</td>
+                            <td>${team.draws}</td>
+                            <td>${team.losses}</td>
+                            <td>${team.goalsFor}</td>
+                            <td>${team.goalsAgainst}</td>
+                            <td>${team.goalDifference}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                }
+
+            } else {
+                // Esconde a tabela para mata-mata
+                document.getElementById('classification-table').style.display = 'none';
+                classificationTitle.textContent = '';
+            }
+        }
+
+        // Renderiza os jogos na UI
+        function renderMatches(matchesResults, title = 'Rodada Atual:') {
+            matchesDisplay.innerHTML = '';
+            roundTitleSpan.textContent = title;
+
+            if (matchesResults.length === 0 && currentRound === 0 && simulationPhase === 'group_stage') {
+                matchesDisplay.innerHTML = '<p>Clique em "Simular Próxima Rodada" para começar!</p>';
+                return;
+            }
+
+            matchesResults.forEach(result => {
+                const matchDiv = document.createElement('div');
+                matchDiv.classList.add('match');
+                matchDiv.innerHTML = `
+                    <span class="team-name">${result.homeTeam.name}</span>
+                    <span class="score">${result.homeScore} x ${result.awayScore}</span>
+                    <span class="team-name">${result.awayTeam.name}</span>
+                `;
+                matchesDisplay.appendChild(matchDiv);
+            });
+        }
+
+        // Atualiza as estatísticas de dois times após um jogo
+        function updateTeamStats(hTeam, aTeam, homeScore, awayScore) {
+            hTeam.games++;
+            aTeam.games++;
+            hTeam.goalsFor += homeScore;
+            hTeam.goalsAgainst += awayScore;
+            aTeam.goalsFor += awayScore;
+            aTeam.goalsAgainst += homeScore;
+
+            if (homeScore > awayScore) { // Vitória do time da casa
+                hTeam.points += 3;
+                hTeam.wins++;
+                aTeam.losses++;
+            } else if (awayScore > homeScore) { // Vitória do time de fora
+                aTeam.points += 3;
+                aTeam.wins++;
+                hTeam.losses++;
+            } else { // Empate
+                hTeam.points += 1;
+                aTeam.points += 1;
+                hTeam.draws++;
+                aTeam.draws++;
+            }
+            hTeam.goalDifference = hTeam.goalsFor - hTeam.goalsAgainst;
+            aTeam.goalDifference = aTeam.goalsFor - aTeam.goalsAgainst;
+        }
+
+        // Simula um jogo de mata-mata
+        function simulateKnockoutMatch(homeTeam, awayTeam) {
+            const homeScore = getRandomScore();
+            const awayScore = getRandomScore();
+
+            let winner = null;
+            if (homeScore > awayScore) {
+                winner = homeTeam;
+            } else if (awayScore > homeScore) {
+                winner = awayTeam;
+            } else { // Empate, simula pênaltis (vencedor aleatório)
+                winner = Math.random() > 0.5 ? homeTeam : awayTeam;
+            }
+            return { homeTeam, awayTeam, homeScore, awayScore, winner };
+        }
+
+        // Renderiza a chave de mata-mata
+        function renderKnockoutBracket(results, roundName, winners) {
+            document.getElementById('classification-table').style.display = 'none';
+            classificationTitle.textContent = '';
+            matchesDisplay.innerHTML = ''; // Limpa os resultados de jogos de rodada
+            knockoutBracketDisplay.style.display = 'block';
+
+            let bracketHTML = `<div class="round-title">${roundName}</div><div class="knockout-bracket">`;
+            results.forEach(match => {
+                bracketHTML += `
+                    <div class="match">
+                        <span class="team-name">${match.homeTeam.name}</span>
+                        <span class="score">${match.homeScore} x ${match.awayScore}</span>
+                        <span class="team-name">${match.awayTeam.name}</span>
+                    </div>
+                `;
+            });
+            bracketHTML += `</div>`;
+
+            if (roundName === 'Final') {
+                bracketHTML += `<div class="champion-text">Vencedor: ${winners[0].name}</div>`;
+            }
+            knockoutBracketDisplay.innerHTML = bracketHTML;
+        }
+
+        // Exibe o campeão
+        function displayChampion(championName) {
+            championDisplay.textContent = `CAMPEÃO: ${championName}`;
+            championDisplay.style.display = 'block';
+        }
+
+        // --- Setup Inicial do Campeonato ---
+        function setupChampionship(championshipId) {
+            currentChampionship = championshipId;
+            // Cria uma nova lista de times com estatísticas zeradas
+            teams = teamsData[championshipId].map(team => ({
+                ...team,
+                points: 0,
+                games: 0,
+                wins: 0,
+                draws: 0,
+                losses: 0,
+                goalsFor: 0,
+                goalsAgainst: 0,
+                goalDifference: 0,
+                group: '', // Reset para todos os times
+            }));
+            currentRound = 0;
+            simulationPhase = 'group_stage'; // Reinicia a fase
+            knockoutParticipants = [];
+            lastRoundWinners = [];
+            currentGroups = {}; // Reinicia os grupos
+
+            // Configurações por campeonato
+            if (championshipId === 'serie_a' || championshipId === 'serie_b') {
+                totalRounds = 38;
+                roundTitleSpan.textContent = 'Rodada Atual:';
+                simulateAllButton.style.display = 'inline-block';
+                simulateButton.textContent = 'Simular Próxima Rodada';
+            } else if (championshipId === 'libertadores') {
+                totalRounds = 6; // Fase de grupos tem 6 rodadas
+                roundTitleSpan.textContent = 'Fase de Grupos - Rodada:';
+                simulateAllButton.style.display = 'inline-block';
+                simulateButton.textContent = 'Simular Próxima Rodada';
+                assignGroups(teamsData.libertadores, 8); // Atribui 32 times a 8 grupos
+            } else if (championshipId === 'mundial') {
+                totalRounds = 3; // Fase de grupos do Mundial (simplificado em 3 rodadas)
+                roundTitleSpan.textContent = 'Fase de Grupos - Rodada:';
+                simulateAllButton.style.display = 'none';
+                simulateButton.textContent = 'Simular Próxima Rodada';
+                assignGroups(teamsData.mundial, 8); // Atribui 32 times a 8 grupos
+            }
+
+            simulateButton.disabled = false;
+            resetButton.disabled = false;
+            matchesDisplay.innerHTML = '<p>Clique em "Simular Próxima Rodada" para começar!</p>';
+            roundNumberSpan.textContent = currentRound;
+            knockoutBracketDisplay.innerHTML = '';
+            championDisplay.style.display = 'none';
+            renderClassificationTable(); // Renderiza a tabela inicial vazia/zerada
+        }
+
+        // --- Lógica para Série A e Série B (Pontos Corridos) ---
+        function generateRoundMatchesPointsCorridos() {
+            let availableTeams = [...teams]; // Usar o array 'teams' do estado atual
+            let matches = [];
+            shuffleArray(availableTeams);
+
+            for (let i = 0; i < availableTeams.length; i += 2) {
+                if (availableTeams[i + 1]) {
+                    matches.push({
+                        home: availableTeams[i],
+                        away: availableTeams[i + 1]
+                    });
+                }
+            }
+            return matches;
+        }
+
+        function simulatePointsCorridosRound() {
+            if (currentRound >= totalRounds) {
+                alert('O campeonato terminou!');
+                simulateButton.disabled = true;
+                simulateAllButton.disabled = true;
+                displayChampion(teams[0].name);
+                return;
+            }
+
+            currentRound++;
+            roundNumberSpan.textContent = currentRound;
+
+            const roundMatches = generateRoundMatchesPointsCorridos(); // Já pega do array 'teams'
+            let simulatedMatchResults = [];
+
+            roundMatches.forEach(match => {
+                const homeScore = getRandomScore();
+                const awayScore = getRandomScore();
+                // Os objetos 'match.home' e 'match.away' já são referências diretas do array 'teams'
+                updateTeamStats(match.home, match.away, homeScore, awayScore);
+                simulatedMatchResults.push({ homeTeam: match.home, awayTeam: match.away, homeScore, awayScore });
+            });
+
+            renderMatches(simulatedMatchResults);
+            renderClassificationTable();
+        }
+
+        // --- Lógica de Grupos (Compartilhada por Libertadores e Mundial) ---
+
+        // Atribui times aos grupos fixos e zera estatísticas de grupo
+        function assignGroups(sourceTeams, numGroups) {
+            currentGroups = {};
+            const groupNames = Array.from({length: numGroups}, (_, i) => String.fromCharCode(65 + i)); // A, B, C...
+
+            // Resetar teams e criar cópias com base nos dados iniciais
+            teams = sourceTeams.map(team => ({
+                ...team,
+                points: 0, games: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, group: ''
+            }));
+            
+            let shuffledTeams = shuffleArray([...teams]); // Embaralha para distribuir nos grupos
+
+            groupNames.forEach(groupName => {
+                currentGroups[groupName] = {};
+                for (let i = 0; i < 4; i++) {
+                    const team = shuffledTeams.shift();
+                    if (team) {
+                        team.group = groupName;
+                        currentGroups[groupName][team.id] = team;
+                    }
+                }
+            });
+            // 'teams' continua sendo a lista flat de todos os times, mas 'currentGroups' mantém a estrutura por grupo
+        }
+
+        // Gera jogos da fase de grupos para uma rodada específica (para 4 times por grupo)
+        function generateGroupStageMatches(round) {
+            const matchesForRound = [];
+            for (const groupName in currentGroups) {
+                const groupTeams = Object.values(currentGroups[groupName]);
+                let groupMatches = [];
+                // Calendário de 4 times por grupo para 3 ou 6 rodadas (ida e volta)
+                // Rodadas 1-3: Ida
+                // Rodadas 4-6: Volta (se aplicável, para 6 rodadas)
+                if (round === 1) { groupMatches.push({ home: groupTeams[0], away: groupTeams[1] }, { home: groupTeams[2], away: groupTeams[3] }); }
+                else if (round === 2) { groupMatches.push({ home: groupTeams[0], away: groupTeams[2] }, { home: groupTeams[1], away: groupTeams[3] }); }
+                else if (round === 3) { groupMatches.push({ home: groupTeams[0], away: groupTeams[3] }, { home: groupTeams[1], away: groupTeams[2] }); }
+                else if (round === 4) { groupMatches.push({ home: groupTeams[1], away: groupTeams[0] }, { home: groupTeams[3], away: groupTeams[2] }); } // Volta
+                else if (round === 5) { groupMatches.push({ home: groupTeams[2], away: groupTeams[0] }, { home: groupTeams[3], away: groupTeams[1] }); } // Volta
+                else if (round === 6) { groupMatches.push({ home: groupTeams[3], away: groupTeams[0] }, { home: groupTeams[2], away: groupTeams[1] }); } // Volta
+                
+                matchesForRound.push(...groupMatches);
+            }
+            return matchesForRound;
+        }
+
+        function simulateGroupRound() {
+            // Verifica se a fase de grupos já terminou
+            if (currentRound >= totalRounds) {
+                // Transiciona para o mata-mata
+                simulationPhase = 'round_of_16';
+                roundTitleSpan.textContent = 'Oitavas de Final';
+                roundNumberSpan.textContent = '';
+                simulateButton.textContent = 'Simular Oitavas de Final';
+                simulateAllButton.style.display = 'none';
+                matchesDisplay.innerHTML = '<p>Fase de grupos encerrada. Clique para simular as oitavas de final.</p>';
+                renderClassificationTable();
+
+                // Determina os classificados para o mata-mata (1º e 2º de cada grupo)
+                knockoutParticipants = [];
+                for (const groupName in currentGroups) {
+                    const groupTeams = Object.values(currentGroups[groupName]);
+                    groupTeams.sort((a, b) => {
+                        if (b.points !== a.points) return b.points - a.points;
+                        if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
+                        return a.name.localeCompare(b.name);
+                    });
+                    knockoutParticipants.push(groupTeams[0], groupTeams[1]);
+                }
+                shuffleArray(knockoutParticipants); // Sorteia os confrontos das oitavas
+                return;
+            }
+
+            currentRound++;
+            roundNumberSpan.textContent = currentRound;
+
+            let simulatedMatchResults = [];
+            const roundMatches = generateGroupStageMatches(currentRound); // Gerar jogos para a rodada atual
+
+            roundMatches.forEach(match => {
+                const homeScore = getRandomScore();
+                const awayScore = getRandomScore();
+                updateTeamStats(match.home, match.away, homeScore, awayScore);
+                simulatedMatchResults.push({ homeTeam: match.home, awayTeam: match.away, homeScore, awayScore });
+            });
+
+            renderMatches(simulatedMatchResults, `Fase de Grupos - Rodada ${currentRound}:`);
+            renderClassificationTable();
+        }
+
+        // Gera os confrontos para uma fase de mata-mata
+        function generateKnockoutMatches(participants) {
+            let matches = [];
+            shuffleArray(participants); // Sorteia os times para os confrontos
+            for (let i = 0; i < participants.length; i += 2) {
+                if (participants[i + 1]) { // Garante que há um par
+                    matches.push({
+                        home: participants[i],
+                        away: participants[i + 1]
+                    });
+                }
+            }
+            return matches;
+        }
+
+        // Lógica para simular uma fase de mata-mata (oitavas, quartas, semi, final)
+        function simulateKnockoutPhase() {
+            let currentPhaseParticipants = [];
+            let nextPhaseTitle = '';
+            let nextPhaseButtonText = '';
+            let nextSimulationPhase = '';
+
+            if (simulationPhase === 'round_of_16') {
+                currentPhaseParticipants = knockoutParticipants; // Vencedores dos grupos (inicialmente)
+                nextPhaseTitle = 'Quartas de Final';
+                nextPhaseButtonText = 'Simular Quartas de Final';
+                nextSimulationPhase = 'quarter_finals';
+            } else if (simulationPhase === 'quarter_finals') {
+                currentPhaseParticipants = lastRoundWinners;
+                nextPhaseTitle = 'Semifinal';
+                nextPhaseButtonText = 'Simular Semifinal';
+                nextSimulationPhase = 'semi_finals';
+            } else if (simulationPhase === 'semi_finals') {
+                currentPhaseParticipants = lastRoundWinners;
+                nextPhaseTitle = 'Final';
+                nextPhaseButtonText = 'Simular Final';
+                nextSimulationPhase = 'final';
+            } else if (simulationPhase === 'final') {
+                currentPhaseParticipants = lastRoundWinners;
+                nextPhaseTitle = 'Final';
+                nextPhaseButtonText = 'Reiniciar Simulação';
+                nextSimulationPhase = 'completed';
+                simulateButton.disabled = true; // Desabilita após a final
+            } else {
+                return; // Campeonato já concluído
+            }
+
+            if (currentPhaseParticipants.length === 0) {
+                alert("Erro: Não há participantes para esta fase. Reinicie a simulação.");
+                return;
+            }
+
+            let currentRoundMatches = generateKnockoutMatches(currentPhaseParticipants);
+            let simulatedMatchResults = [];
+            let currentWinners = [];
+
+            currentRoundMatches.forEach(match => {
+                const result = simulateKnockoutMatch(match.home, match.away);
+                simulatedMatchResults.push(result);
+                currentWinners.push(result.winner);
+            });
+            lastRoundWinners = currentWinners; // Atualiza os vencedores para a próxima fase
+
+            renderMatches(simulatedMatchResults, nextPhaseTitle);
+            renderKnockoutBracket(simulatedMatchResults, nextPhaseTitle, currentWinners);
+
+            simulationPhase = nextSimulationPhase;
+            simulateButton.textContent = nextPhaseButtonText;
+
+            if (simulationPhase === 'completed') {
+                displayChampion(lastRoundWinners[0].name);
+            }
+        }
+
+
+        // --- Função Principal de Simulação ---
+        function simulateNextStep() {
+            if (currentChampionship === 'serie_a' || currentChampionship === 'serie_b') {
+                simulatePointsCorridosRound();
+            } else if (currentChampionship === 'libertadores' || currentChampionship === 'mundial') {
+                if (simulationPhase === 'group_stage') {
+                    simulateGroupRound();
+                } else {
+                    simulateKnockoutPhase(); // Usar a lógica genérica de mata-mata
+                }
+            }
+        }
+
+        // --- Função de Reiniciar Simulação Geral ---
+        function resetSimulation() {
+            championDisplay.style.display = 'none';
+            knockoutBracketDisplay.innerHTML = '';
+            lastRoundWinners = [];
+            knockoutParticipants = [];
+            setupChampionship(championshipSelect.value); // Reseta para o campeonato selecionado
+        }
+
+        function simulateAllRounds() {
+            simulateButton.disabled = true;
+            simulateAllButton.disabled = true;
+
+            let simulationInterval;
+            let currentSimulatedRound = currentRound;
+
+            if (currentChampionship === 'libertadores' && simulationPhase !== 'group_stage') {
+                alert("Para Libertadores (mata-mata), simule as fases passo a passo.");
+                simulateButton.disabled = false;
+                simulateAllButton.disabled = false;
+                return;
+            }
+            if (currentChampionship === 'mundial' && simulationPhase !== 'group_stage') {
+                alert("O Mundial de Clubes é simulado passo a passo.");
+                simulateButton.disabled = false;
+                simulateAllButton.disabled = false;
+                return;
+            }
+
+            simulationInterval = setInterval(() => {
+                let shouldContinue = false;
+                if ((currentChampionship === 'serie_a' || currentChampionship === 'serie_b') && currentSimulatedRound < totalRounds) {
+                    simulatePointsCorridosRound();
+                    currentSimulatedRound = currentRound;
+                    shouldContinue = true;
+                } else if ((currentChampionship === 'libertadores' || currentChampionship === 'mundial') && simulationPhase === 'group_stage' && currentSimulatedRound < totalRounds) {
+                    simulateGroupRound();
+                    currentSimulatedRound = currentRound;
+                    shouldContinue = true;
+                }
+                
+                // Condição para parar o intervalo
+                if (!shouldContinue || currentRound >= totalRounds || (currentChampionship === 'libertadores' && simulationPhase !== 'group_stage') || (currentChampionship === 'mundial' && simulationPhase !== 'group_stage')) {
+                    clearInterval(simulationInterval);
+                    simulateButton.disabled = false;
+                    simulateAllButton.disabled = false;
+                    if ((currentChampionship === 'libertadores' || currentChampionship === 'mundial') && simulationPhase === 'round_of_16') {
+                         alert('Fase de grupos concluída! Clique para simular as oitavas.');
+                    } else if (currentRound >= totalRounds) {
+                        alert('Simulação do campeonato concluída!');
+                    }
+                }
+            }, 300); // Intervalo de 300ms entre as rodadas
+        }
+
+        // --- Event Listeners ---
+        championshipSelect.addEventListener('change', (event) => {
+            setupChampionship(event.target.value);
+        });
+        simulateButton.addEventListener('click', simulateNextStep);
+        resetButton.addEventListener('click', resetSimulation);
+        simulateAllButton.addEventListener('click', simulateAllRounds);
+
+        // --- Inicialização ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setupChampionship('serie_b'); // Inicia com a Série B por padrão
+        });
+    </script>
+</body>
+</html>

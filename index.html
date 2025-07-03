@@ -1,914 +1,1424 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Futebol</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            background-color: #eef2f7;
-            margin: 0;
-            padding: 30px 20px;
-            box-sizing: border-box;
-        }
-
-        .container {
-            background-color: #ffffff;
-            padding: 35px;
-            border-radius: 12px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 100%;
-            max-width: 1000px;
-        }
-
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 2.2em;
-        }
-
-        h2 {
-            color: #34495e;
-            margin-top: 30px;
-            margin-bottom: 20px;
-            font-size: 1.6em;
-        }
-
-        .selection-panel {
-            margin-bottom: 30px;
-            background-color: #f8fcfd;
-            border: 1px solid #e0f2f7;
-            border-radius: 8px;
-            padding: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .selection-panel label {
-            font-size: 1.1em;
-            color: #34495e;
-            font-weight: bold;
-        }
-
-        .selection-panel select {
-            padding: 8px 12px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1em;
-            background-color: white;
-            cursor: pointer;
-        }
-
-        .controls {
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        button {
-            background-color: #3498db;
-            color: white;
-            padding: 14px 28px;
-            border: none;
-            border-radius: 7px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.1s ease;
-        }
-
-        button:hover {
-            background-color: #2980b9;
-            transform: translateY(-2px);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .current-round {
-            background-color: #f8fcfd;
-            border: 1px solid #e0f2f7;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
-            min-height: 120px; /* Garante espaço para os resultados */
-        }
-
-        #matches-display {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .match {
-            background-color: #fff;
-            border: 1px solid #dcdcdc;
-            border-radius: 6px;
-            padding: 10px 15px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-            font-size: 0.95em;
-            min-width: 250px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .match .team-name {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .match .score {
-            font-weight: bold;
-            color: #007bff;
-            margin: 0 10px;
-        }
-
-        /* Tabela de Classificação */
-        .classification table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background-color: #fdfdfd;
-        }
-
-        .classification th, .classification td {
-            padding: 12px 15px;
-            border: 1px solid #ecf0f1;
-            text-align: left;
-            font-size: 0.95em;
-        }
-
-        .classification th {
-            background-color: #3498db;
-            color: white;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .classification tbody tr:nth-child(even) {
-            background-color: #f7fbfd;
-        }
-
-        .classification tbody tr:hover {
-            background-color: #eaf6fd;
-        }
-
-        /* Estilo para as posições na tabela */
-        /* G4 - Verde */
-        .classification tbody tr:nth-child(1),
-        .classification tbody tr:nth-child(2),
-        .classification tbody tr:nth-child(3),
-        .classification tbody tr:nth-child(4) {
-            background-color: #d4edda;
-            font-weight: bold;
-        }
-        /* Z4 - Vermelho */
-        .classification tbody tr:nth-last-child(1),
-        .classification tbody tr:nth-last-child(2),
-        .classification tbody tr:nth-last-child(3),
-        .classification tbody tr:nth-last-child(4) {
-            background-color: #f8d7da;
-        }
-
-        /* Classes específicas para a Libertadores/Mundial */
-        .group-stage-header {
-            font-size: 1.6em;
-            color: #34495e;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            text-align: center;
-            font-weight: bold;
-        }
-        .lib-group-heading {
-            background-color: #6c757d;
-            color: white;
-            padding: 8px 15px;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            font-size: 1.3em;
-            text-align: center;
-        }
-
-        .knockout-bracket {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .knockout-bracket .round-title {
-            font-size: 1.4em;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 5px;
-        }
-
-        .knockout-bracket .match {
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .champion-display {
-            font-size: 2em;
-            font-weight: bold;
-            color: #28a745;
-            margin-top: 30px;
-            padding: 20px;
-            border: 2px solid #28a745;
-            border-radius: 10px;
-            animation: bounceIn 1s ease-out;
-        }
-
-        @keyframes bounceIn {
-            0% { transform: scale(0.1); opacity: 0; }
-            60% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(1); }
-        }
-    </style>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <link rel="stylesheet" href="">
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+   <link rel="icon" href="https://cdn.iset.io/assets/55268/produtos/51876/adesivo-barbearia-barbeiro-salaoo.jpg">
+   <title>Barbearia</title>
 </head>
 <body>
-    <div class="container">
-        <h1>Simulador de Futebol</h1>
-
-        <div class="selection-panel">
-            <label for="championship-select">Escolha o Campeonato:</label>
-            <select id="championship-select">
-                <option value="serie_b">Brasileirão Série B</option>
-                <option value="serie_a">Brasileirão Série A</option>
-                <option value="libertadores">Libertadores</option>
-                <option value="mundial">Super Mundial (Mundial de Clubes)</option>
-            </select>
-        </div>
-
-        <div class="controls">
-            <button id="simulate-button">Simular Próxima Rodada</button>
-            <button id="reset-button">Reiniciar Simulação</button>
-            <button id="simulate-all-button" style="display: none;">Simular Campeonato Inteiro</button>
-        </div>
-
-        <div class="current-round">
-            <h2><span id="round-title">Rodada Atual:</span> <span id="round-number">0</span></h2>
-            <div id="matches-display">
-                <p>Selecione um campeonato e clique em "Simular Próxima Rodada" para começar!</p>
+    <section id="Home">
+    <div class="Inicio">
+    <img src="http://127.0.0.1:5500/Programa%C3%A7%C3%A3o/Logo-barbearia-Png-1024x1024.png" class="logoInicio" alt="Logo da Barbearia" >
+    <a href="#Home">Início</a>
+    <a href="#Sobre">Sobre</a>
+    <a href="#Agenda">Agenda</a>
+    <a href="#Unidades">Unidades</a>
+    <a href="#Avaliações">Avaliações</a>
+    <a href="/Barbearia/Login.barbearia.html">
+        <img src="https://brasilescola.uol.com.br/assets/images/perfil.svg" class="Login" alt="">
+    </a>
+    <button class="config-btn" onclick="toggleMenu()">⚙️</button>
+    <div class="config-menu" id="configMenu">
+    <label>
+      <input type="checkbox" id="themeToggle" class="switch-theme">
+      <span class="tema">Tema</span>
+    </label>
+</div>
+</section>
+</div>
+<div class="container-slider">
+    <button id="prev-button">&#10094;</button>
+    <div class="container-images">
+      <img src="https://mir-s3-cdn-cf.behance.net/project_modules/1400/55ed7332132717.567063ba2e4cb.jpg" alt="" class="slider on">
+      <img src="https://media.fashionnetwork.com/cdn-cgi/image/fit=contain,width=1000,height=1000,format=auto/m/7344/4072/8eae/3e1a/843d/a6fc/2459/d517/58bf/49c7/49c7.png" alt="" class="slider">  
+    </div>
+    <button id="next-button">&#10095;</button>
+  </div>
+<section id="Sobre">
+   <div class="tittle">
+   <img src="https://conteudo.solutudo.com.br/wp-content/uploads/2020/01/BARBEARIA-ARACAJU-BARBEIRO-MESTRE.png" alt="" class="imgbarbearia">
+   <div class="caixa"><h2>Sobre a Barbearia Alura:</h2>
+   <p>Localizada no coração da cidade a Barbearia Alura traz para o mercado o que há de melhor para o seu cabelo e barba. Fundada em 2019, a Barbearia Alura já é destaque na cidade e conquista novos clientes a cada dia.</p>
+<p>Nossa missão é: "Proporcionar auto-estima e qualidade de vida aos clientes".</p>
+<p>Oferecemos profissionais experientes e antenados às mudanças no mundo da moda. O atendimento possui padrão de excelência e agilidade, garantindo qualidade e satisfação dos nossos clientes.</p>
+</div>
+<hr>
+<section id="Agenda">
+    <h2>Agende seu Atendimento</h2>
+    <div class="calendario-container">
+        <h3>Selecione uma Data para Agendamento:</h3>
+        <div id="mês">Abril</div>
+        <div id="calendario">
+            <div id="calendario-header">
+                <div class="dia-semana">Dom</div>
+                <div class="dia-semana">Seg</div>
+                <div class="dia-semana">Ter</div>
+                <div class="dia-semana">Qua</div>
+                <div class="dia-semana">Qui</div>
+                <div class="dia-semana">Sex</div>
+                <div class="dia-semana">Sáb</div>
             </div>
-            <div id="champion-display" class="champion-display" style="display:none;"></div>
+            <div id="calendario-dias"></div>
         </div>
-
-        <div class="classification">
-            <h2 id="classification-title">Tabela de Classificação</h2>
-            <table id="classification-table">
-                <thead>
-                    <tr>
-                        <th>Pos.</th>
-                        <th>Time</th>
-                        <th>Pts</th>
-                        <th>J</th>
-                        <th>V</th>
-                        <th>E</th>
-                        <th>D</th>
-                        <th>GP</th>
-                        <th>GC</th>
-                        <th>SG</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                    </tbody>
-            </table>
-            <div id="knockout-bracket-display" style="display: none;">
+   
+        <div id="calendario-dias"></div>
+    </div>
+    <h3>Agendar para: <span id="data-agendada"></span></h3>
+    <label for="hora">Escolha o horário:&#128340;</label>
+    <select id="hora">
+        <option value="09:00">09:00</option>
+        <option value="10:00">10:00</option>
+        <option value="11:00">11:00</option>
+        <option value="14:00">14:00</option>
+        <option value="15:00">15:00</option>
+        <option value="16:00">16:00</option>
+        <option value="17:00">17:00</option>
+    </select>
+   <br>
+    <div class="campo-usuario" style="display:none;">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" name="nome"  placeholder="Digite seu nome" required>
+        <label for="email">E-mail:</label>
+        <input type="email" id="email" name="email"  placeholder="Digite seu e-mail" required>
+    </div>
+    <button id="btn-agendar" disabled >Confirmar Agendamento</button>
+</section>
+ <hr>
+ <section id="Unidades">
+    <div class="locais">
+        <h2>Nossas unidades:</h2>
+        <div class="local1">
+            <div class="unidade">
+                <div class="texto-esquerda">
+                    <h3>Itaim</h3>
+                    Rua Dr. Renato Paes de Barros, 390<br>
+                    Itaim Bibi | São Paulo | 04530-000<br>
+                    Tel 11 2538 8009
                 </div>
+                <div class="horario-centro">
+                    Segunda à Sexta 10h às 20h<br>
+                    Sábado das 09h às 18h
+                </div>
+                <div class="mapa-container">
+                    <div class="mapa-centralizado">
+                        <img src="https://static.wixstatic.com/media/ab76ba_56dac28bd87f416d8fe39aebdf634ddb~mv2.jpg/v1/fill/w_204,h_120,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/ab76ba_56dac28bd87f416d8fe39aebdf634ddb~mv2.jpg" alt="" class="mapa-imagem">
+                        <img src="https://static.wixstatic.com/media/ab76ba_e9d421f29a9342078771a8241490f0bd~mv2.png/v1/fill/w_40,h_48,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/ab76ba_e9d421f29a9342078771a8241490f0bd~mv2.png" alt="" class="gps">
+                        <a href="#" data-mapa="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3656.849285493395!2d-46.67843468502127!3d-23.57506978466635!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94ce574221c1ddb9%3A0x6a0c0e70a3528b96!2sR.+Dr.+Renato+Paes+de+Barros%2C+390+-+Itaim+Bibi%2C+S%C3%A3o+Paulo+-+SP%2C+04530-000!5e0!3m2!1spt-BR!2sbr!4v1683726485806!5m2!1spt-BR!2sbr" class="abrir-mapa">Veja o Mapa</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="local2">
+            <div class="unidade">
+                <div class="texto-esquerda">
+                    <h3>Marvel Barbershop by Corleone</h3>
+                    Av. Brig. Faria Lima, 2902<br>
+                    Jd. Paulistano, São Paulo - SP, 01451-000<br>
+                    Tel 11 3167-7110
+                </div>
+                <div class="horario-centro">
+                    Segunda à Sexta 10h às 20h<br>
+                    Sábado das 09h às 18h
+                </div>
+                <div class="mapa-container">
+                    <div class="mapa-centralizado">
+                        <img src="https://static.wixstatic.com/media/ab76ba_d7d0400d70fb4203a97b689326057cef~mv2.jpg/v1/fill/w_204,h_120,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/2024-11-16.jpg" alt="Mapa Marvel" class="mapa-imagem">
+                        <img src="https://static.wixstatic.com/media/ab76ba_e9d421f29a9342078771a8241490f0bd~mv2.png/v1/fill/w_40,h_48,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/ab76ba_e9d421f29a9342078771a8241490f0bd~mv2.png" alt="" class="gps">
+                        <a href="#" data-mapa="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3656.666832326588!2d-46.68593688502096!3d-23.58066538466245!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94ce5784961099b9%3A0x5734202c469b1836!2sAv.+Brig.+Faria+Lima%2C+2902+-+Jardim+Paulistano%2C+S%C3%A3o+Paulo+-+SP%2C+01451-000!5e0!3m2!1spt-BR!2sbr!4v1683726532432!5m2!1spt-BR!2sbr" class="abrir-mapa">Veja o Mapa</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="local3">
+            <div class="unidade">
+                <div class="texto-esquerda">
+                    <h3>Shopping Morumbi</h3>
+                    Av. Roque Petroni Júnior, 1089 | Piso térreo, Loja 46 - 47<br>
+                    Morumbi | São Paulo | 04583-110<br>
+                    Tel 11 5181 2444
+                </div>
+                <div class="horario-centro">
+                    Segunda à Sábado 10h às 22h<br>
+                    Domingos e Feriados 14h às 20h
+                </div>
+                <div class="mapa-container">
+                    <div class="mapa-centralizado">
+                        <img src="https://static.wixstatic.com/media/ab76ba_e67d390827bc4e30846f7541090ae92e~mv2.jpg/v1/crop/x_25,y_3,w_296,h_189/fill/w_204,h_115,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/ab76ba_e67d390827bc4e30846f7541090ae92e~mv2.jpg" alt="Mapa Morumbi" class="mapa-imagem">
+                        <img src="https://static.wixstatic.com/media/ab76ba_e9d421f29a9342078771a8241490f0bd~mv2.png/v1/fill/w_40,h_48,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/ab76ba_e9d421f29a9342078771a8241490f0bd~mv2.png" alt="" class="gps">
+                        <a href="#" data-mapa="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3654.838575080918!2d-46.69783938501869!3d-23.636183384662007!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94ce5a21e73712b5%3A0x7d28225026615b3b!2sShopping+Morumbi+-+Av.+Roque+Petroni+J%C3%BAnior%2C+1089+-+Morumbi%2C+S%C3%A3o+Paulo+-+SP%2C+04583-110!5e0!3m2!1spt-BR!2sbr!4v1683726577488!5m2!1spt-BR!2sbr" class="abrir-mapa">Veja o Mapa</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="mapa-modal" class="mapa-modal">
+            <div class="mapa-modal-conteudo">
+                <span class="fechar-mapa">×</span>
+                <iframe id="mapa-iframe" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+            </div>
         </div>
     </div>
+    <hr>
+</section>
+<div class="caixas-av">
+    <section id="Avaliações">
+        <form onsubmit="submitAvaliation(); return false;">
+          <div class="envio" id="identificacao">
+            <h2>Avalie nossa Barbearia:</h2>
+            <div>
+              <h3>Conte-nos o que achou! Seu comentário é essencial para nós e para a melhoria contínua da nossa barbearia.</h3>
+            </div>
+            <div class="avaliacao">
+              <input type="radio" id="estrela5" name="avaliacao" value="5">
+              <label for="estrela5">&#9733;</label>
+              <input type="radio" id="estrela4" name="avaliacao" value="4">
+              <label for="estrela4">&#9733;</label>
+              <input type="radio" id="estrela3" name="avaliacao" value="3">
+              <label for="estrela3">&#9733;</label>
+              <input type="radio" id="estrela2" name="avaliacao" value="2">
+              <label for="estrela2">&#9733;</label>
+              <input type="radio" id="estrela1" name="avaliacao" value="1">
+              <label for="estrela1">&#9733;</label>
+            </div>
+            <div class="avaliar">
+              <label for="nome">Nome:</label>
+              <input type="text" id="nome" name="nome" placeholder="Digite seu nome" required>
+     
+              <label for="email">E-mail:</label>
+              <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required>
+            </div>
+            <textarea id="comentario" placeholder="Escreva seu comentário aqui..."></textarea>
+            <br>
+            <button class="btn" type="submit">Enviar Avaliação</button>
+          </div>
+        </form>
+     
+        <form onsubmit="submitAvaliationAnonimo(); return false;">
+          <div class="anonimo" id="anonimo" style="display: none;">
+            <div class="envio">
+              <h2>Avalie nossa Barbearia:</h2>
+              <div>
+                <h3>Conte-nos o que achou! Seu comentário é essencial para nós e para a melhoria contínua da nossa barbearia.</h3>
+              </div>
+              <div class="avaliacao-anonima">
+                <input type="radio" id="estrela5anonimo" name="avaliacao-anonimo" value="5">
+                <label for="estrela5anonimo">&#9733;</label>
+                <input type="radio" id="estrela4anonimo" name="avaliacao-anonimo" value="4">
+                <label for="estrela4anonimo">&#9733;</label>
+                <input type="radio" id="estrela3anonimo" name="avaliacao-anonimo" value="3">
+                <label for="estrela3anonimo">&#9733;</label>
+                <input type="radio" id="estrela2anonimo" name="avaliacao-anonimo" value="2">
+                <label for="estrela2anonimo">&#9733;</label>
+                <input type="radio" id="estrela1anonimo" name="avaliacao-anonimo" value="1">
+                <label for="estrela1anonimo">&#9733;</label>
+              </div>
+              <textarea id="comentario-anonimo" placeholder="Escreva seu comentário aqui..." ></textarea>
+              <br>
+              <button class="btn" type="submit">Enviar Avaliação Anônima</button>
+            </div>
+          </div>
+        </form>
+     
+        <div class="anonimo-container">
+          <h3>Modo Anônimo</h3>
+          <div class="toggle-container">
+            <input type="checkbox" name="switch" id="switchPrincipal" onchange="toggleModoAnonimo()">
+            <i class="bi bi-incognito" class="anonimoimg"></i>
+        </div>
+        </div>
+     
+        <p id="mensagemFinal" style="display: none;">Obrigado pela sua avaliação!</p>
+        <p id="mensagemFinalAnonimo" style="display: none;">Obrigado pela sua avaliação anônima!</p>
+      </section>
+    <details>
+        <summary>Outras avaliações:</summary>
+        <div class="comentarios-container">
+            <div class="seçãocomentarios">
+                <img src="https://img.freepik.com/  vetores-premium/icone-de-perfil-de-usuario-em-estilo-plano-ilustracao-em-vetor-avatar-membro-em-fundo-isolado-conceito-de-negocio-de-sinal-de-permissao-humana_157943-15752.jpg?semt=ais_hybrid" alt="" class="usuario1">
+                <span class="nomeusuario">João Vitor Manoel</span><br>
+                <span class="estrelas">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+                <br>
+                <span class="coment">Atendimento excelente e corte perfeito! Super recomendo a barbearia.</span>
+            </div>
+            <div class="seçãocomentarios2">
+                <img src="https://img.freepik.com/vetores-premium/icone-de-perfil-de-usuario-em-estilo-plano-ilustracao-em-vetor-avatar-membro-em-fundo-isolado-conceito-de-negocio-de-sinal-de-permissao-humana_157943-15752.jpg?semt=ais_hybrid" alt="" class="usuario1">
+                <span class="nomeusuario">Kaique Alexsander</span><br>
+                <span class="estrelas">&#9733;&#9733;&#9733;&#9733;&#9734;</span>
+                <br>
+                <span class="coment">Ótimo atendimento e corte, mas achei que o ambiente poderia ser mais confortável.</span>
+            </details>            
+            </div>
+        </div>
+    </div>    
+</section>
+<footer>
+    <img class="logo" src="https://smee.com.br/mario/logo-branco.png" alt="logo do alura">
+    <p class="copyright">© Copyright Barbearia Alura - 2025</p>
+    </footer>
+    </body>
+    </html>
+<style>
+   .tittle{
+       border-radius: 20px;
+       margin: 20px;
+       background-color:rgb(207, 207, 207);
+       text-align: center;
+       padding: 10px;
+       background-image: linear-gradient(black,white);
+       background: transparent;
+       background-color: rgba(255, 255, 255, 0.219);
+       box-shadow: 0 4px 10px 5px#888;
+}
+   .caixa{
+       margin: 20px auto;
+       border: 2px solid;
+       box-sizing: border-box;
+       padding: 10px;
+       width: 70%;
+       box-shadow: 0 4px 4px 0px gray;
+   }
+   h1{
+   font-size: 40px;
+   font-family:sans-serif;
+   }
+   body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      transition: background-color 0.3s, color 0.3s;
+      background-color: #121212;
+      color: #ffffff;
+      background-image: none;
+      background-size: cover;
+      background-position: center;
+      overflow-x: hidden;
+    }
 
-    <script>
-        // --- Dados dos Times (2024/2025 - Exemplos e times reais/prováveis) ---
-        const teamsData = {
-            serie_b: [
-                { id: 'ame', name: 'América-MG' }, { id: 'ava', name: 'Avaí' }, { id: 'botsp', name: 'Botafogo-SP' },
-                { id: 'bru', name: 'Brusque' }, { id: 'cea', name: 'Ceará' }, { id: 'cha', name: 'Chapecoense' },
-                { id: 'cor', name: 'Coritiba' }, { id: 'crb', name: 'CRB' }, { id: 'goi', name: 'Goiás' },
-                { id: 'gua', name: 'Guarani' }, { id: 'itu', name: 'Ituano' }, { id: 'juv', name: 'Juventude' },
-                { id: 'mir', name: 'Mirassol' }, { id: 'nov', name: 'Novorizontino' }, { id: 'opm', name: 'Operário-PR' },
-                { id: 'pon', name: 'Ponte Preta' }, { id: 'san', name: 'Santos' }, { id: 'spo', name: 'Sport' },
-                { id: 'vil', name: 'Vila Nova' }, { id: 'vit', name: 'Vitória' },
-            ],
-            serie_a: [
-                { id: 'atl_mg', name: 'Atlético-MG' }, { id: 'atl_go', name: 'Atlético-GO' }, { id: 'bahia', name: 'Bahia' },
-                { id: 'bot_rj', name: 'Botafogo' }, { id: 'brag', name: 'Bragantino' }, { id: 'cor', name: 'Corinthians' },
-                { id: 'cru', name: 'Cruzeiro' }, { id: 'cui', name: 'Cuiabá' }, { id: 'fla', name: 'Flamengo' },
-                { id: 'flu', name: 'Fluminense' }, { id: 'fort', name: 'Fortaleza' }, { id: 'gre', name: 'Grêmio' },
-                { id: 'int', name: 'Internacional' }, { id: 'juv', name: 'Juventude' }, { id: 'pal', name: 'Palmeiras' },
-                { id: 'ath_pr', name: 'Athletico-PR' }, { id: 'sao', name: 'São Paulo' }, { id: 'vas', name: 'Vasco' },
-                { id: 'vit', name: 'Vitória' }, { id: 'cric', name: 'Criciúma' }
-            ],
-            libertadores: [ // 32 times para fase de grupos (baseado em 2024, exemplo)
-                { id: 'river_arg', name: 'River Plate (ARG)' }, { id: 'flamengo_bra', name: 'Flamengo (BRA)' }, { id: 'palmeiras_bra', name: 'Palmeiras (BRA)' }, { id: 'fluminense_bra', name: 'Fluminense (BRA)' },
-                { id: 'atleticomg_bra', name: 'Atlético-MG (BRA)' }, { id: 'saopaulo_bra', name: 'São Paulo (BRA)' }, { id: 'gremio_bra', name: 'Grêmio (BRA)' }, { id: 'internacional_bra', name: 'Internacional (BRA)' },
-                { id: 'athpr_bra', name: 'Athletico-PR (BRA)' }, { id: 'botafogo_bra', name: 'Botafogo (BRA)' }, { id: 'bragantino_bra', name: 'Bragantino (BRA)' }, { id: 'nacional_uru', name: 'Nacional (URU)' },
-                { id: 'penarol_uru', name: 'Peñarol (URU)' }, { id: 'bocajrs_arg', name: 'Boca Juniors (ARG)' }, { id: 'racing_arg', name: 'Racing (ARG)' }, { id: 'sanlorenzo_arg', name: 'San Lorenzo (ARG)' },
-                { id: 'colo_chi', name: 'Colo-Colo (CHI)' }, { id: 'ucatolica_chi', name: 'U. Católica (CHI)' }, { id: 'olimpia_par', name: 'Olimpia (PAR)' }, { id: 'libertad_par', name: 'Libertad (PAR)' },
-                { id: 'cerro_par', name: 'Cerro Porteño (PAR)' }, { id: 'ldu_equ', name: 'LDU Quito (EQU)' }, { id: 'indep_valle_equ', name: 'Indep. del Valle (ECU)' }, { id: 'atl_nacional_col', name: 'Atl. Nacional (COL)' },
-                { id: 'millonarios_col', name: 'Millonarios (COL)' }, { id: 'alianza_per', name: 'Alianza Lima (PER)' }, { id: 'uni_dep_per', name: 'U. Deportes (PER)' }, { id: 'barcelona_ecu', name: 'Barcelona (ECU)' },
-                { id: 'bolivar_bol', name: 'Bolívar (BOL)' }, { id: 'strongest_bol', name: 'The Strongest (BOL)' }, { id: 'dep_tachira_ven', name: 'Dep. Táchira (VEN)' }, { id: 'rosario_arg', name: 'Rosario Central (ARG)' }
-            ],
-            mundial: [ // 32 times para o novo formato de 2025 (mais realistas/prováveis)
-                // UEFA (12)
-                { id: 'real_madrid', name: 'Real Madrid (ESP)' }, { id: 'man_city', name: 'Man. City (ING)' }, { id: 'chelsea', name: 'Chelsea (ING)' },
-                { id: 'bayern_munich', name: 'Bayern de Munique (ALE)' }, { id: 'psg', name: 'PSG (FRA)' }, { id: 'inter_milao', name: 'Inter de Milão (ITA)' },
-                { id: 'porto', name: 'Porto (POR)' }, { id: 'benfica', name: 'Benfica (POR)' }, { id: 'dortmund', name: 'Borussia Dortmund (ALE)' },
-                { id: 'juventus', name: 'Juventus (ITA)' }, { id: 'atl_madrid', name: 'Atlético de Madrid (ESP)' }, { id: 'red_bull_salzburg', name: 'RB Salzburg (AUT)' },
-                // CONMEBOL (6)
-                { id: 'palmeiras_mund', name: 'Palmeiras (BRA)' }, { id: 'flamengo_mund', name: 'Flamengo (BRA)' }, { id: 'fluminense_mund', name: 'Fluminense (BRA)' },
-                { id: 'river_plate_mund', name: 'River Plate (ARG)' }, { id: 'boca_juniors_mund', name: 'Boca Juniors (ARG)' }, { id: 'nacional_uru_mund', name: 'Nacional (URU)' },
-                // CONCACAF (4)
-                { id: 'monterrey', name: 'Monterrey (MEX)' }, { id: 'seattle_sounders', name: 'Seattle Sounders (EUA)' }, { id: 'leon_mex', name: 'León (MEX)' }, { id: 'pachuca', name: 'Pachuca (MEX)' },
-                // CAF (4)
-                { id: 'al_ahly', name: 'Al Ahly (EGI)' }, { id: 'wydad_ac', name: 'Wydad AC (MAR)' }, { id: 'esperance_tunis', name: 'Esperance ST (TUN)' }, { id: 'mamelodi_sundowns', name: 'Mamelodi (RSA)' },
-                // AFC (4)
-                { id: 'al_hilal', name: 'Al-Hilal (SAU)' }, { id: 'urawa_red_diamonds', name: 'Urawa Red Diamonds (JAP)' }, { id: 'al_ain', name: 'Al-Ain (EAU)' }, { id: 'jeonbuk_motors', name: 'Jeonbuk Motors (COR)' },
-                // OFC (1)
-                { id: 'auckland_city', name: 'Auckland City (NZL)' },
-                // País Sede (1)
-                { id: 'eua_sede', name: 'País Sede (EUA)' } // Time a ser definido, por enquanto representativo
-            ]
-        };
 
-        // --- Variáveis de Estado Global ---
-        let currentChampionship = 'serie_b';
-        let teams = []; // Lista de times com estatísticas (varia conforme o campeonato)
-        let currentRound = 0;
-        let totalRounds = 38;
-        let simulationPhase = 'group_stage'; // 'group_stage', 'round_of_16', 'quarter_finals', 'semi_finals', 'final', 'completed'
-        let knockoutParticipants = []; // Times que avançam para as fases de mata-mata
-        let lastRoundWinners = []; // Vencedores da rodada anterior no mata-mata
-        let currentGroups = {}; // Para armazenar os grupos do torneio atual (Libertadores/Mundial)
+    body.light {
+      background-color: #f1f1f1;
+      color: #000;
+      background-image: url('https://img.freepik.com/vetores-gratis/fundo-branco-monocromatico-de-estilo-de-papel_23-2149023490.jpg');
+      transition: background-color 0.3s, color 0.3s;  
+    }
+    label {  
+    color: #333;
+    }
+    body.light label {
+    color: #333;
+    }
+    .config-btn {
+      position: fixed;
+      right: 2%;
+      top: 23px;
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 10px 10px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+      z-index: 999;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
 
-        // --- Elementos HTML ---
-        const championshipSelect = document.getElementById('championship-select');
-        const simulateButton = document.getElementById('simulate-button');
-        const resetButton = document.getElementById('reset-button');
-        const simulateAllButton = document.getElementById('simulate-all-button');
-        const roundNumberSpan = document.getElementById('round-number');
-        const roundTitleSpan = document.getElementById('round-title');
-        const matchesDisplay = document.getElementById('matches-display');
-        const classificationTitle = document.getElementById('classification-title');
-        const tableBody = document.getElementById('table-body');
-        const knockoutBracketDisplay = document.getElementById('knockout-bracket-display');
-        const championDisplay = document.getElementById('champion-display');
 
-        // --- Funções Auxiliares Comuns ---
+    .config-menu {
+      position: fixed;
+      top: 100px;
+      right: 10px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 14px;
+      display: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 999;
+      font-size: 14px;
+      color: black;
+    }
 
-        function getRandomScore() {
-            return Math.floor(Math.random() * 4); // Placar de 0 a 3 gols
+
+    .config-menu label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+    span.nomeusuario,span.coment{
+    color: black ;
+    }
+    .switch-theme {
+      appearance: none;
+      width: 60px;
+      height: 34px;
+      background-color: #ccc;
+      border-radius: 34px;
+      position: relative;
+      outline: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .switch-theme, .tema{
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+    cursor: pointer;
+    }
+
+
+    .switch-theme::before {
+      content: '🌙';
+      position: absolute;
+      left: 4px;
+      top: 3px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background-color: white;
+      text-align: center;
+      line-height: 28px;
+      font-size: 16px;
+      transition: transform 0.3s;
+    }
+
+
+    .switch-theme:checked {
+      background-color: #666;
+    }
+
+
+    .switch-theme:checked::before {
+      content: '☀️';
+      transform: translateX(26px);
+    }
+   a{
+    color: rgba(255, 255, 255, 0.822);
+    text-decoration: none;
+    transition: transform 0.3s ease;
+    display: inline-block;
+    padding: 10px 20px;
+}
+a:hover {
+    transform: scale(1.2);
+}
+   footer{
+       text-align: center;
+       background-color: black;
+       padding-left: 0;
+    padding-right: 0;
+    margin-left: -20px;  /* Remove o padding da esquerda */
+    margin-right: -20px; /* Remove o padding da direita */
+   }
+   footer img {
+    width: 100%; /* A imagem vai ocupar toda a largura do footer */
+    height: 100%; /* A altura vai ocupar toda a altura do footer */
+}
+   .copyright{
+       color: white;
+   }
+   .logo{
+       width: 10vh;
+       height: 15vh;
+   }
+   iframe{
+    width: 70%;
+  }
+  .logoInicio{
+    width: 8vh;
+    height: 8vh;
+  }
+  .logoInicio:hover{
+    transform: scale(1.2);
+    cursor: pointer;
+    transition: 0.3s ease;
+ }
+ .avaliacao {
+            direction:rtl ;
+            display: flex;
+            justify-content: center;
+        }
+        .avaliacao input {
+            display: none;
+        }
+        .avaliacao label {
+            font-size: 30px;
+            color: rgb(109, 108, 108);
+            cursor: pointer;
+        }
+        .avaliacao input:checked ~ label {
+            color: gold;
+        }
+        .avaliacao input:hover ~ label {
+            color: gold;
+            transition: 0.3s ease;
+        }
+        .avaliacao-anonima {
+            direction:rtl ;
+            display: flex;
+            justify-content: center;
+        }
+        .avaliacao-anonima input {
+            display: none;
+        }
+        .avaliacao-anonima label {
+            font-size: 30px;
+            color: rgb(109, 108, 108);
+            cursor: pointer;
+        }
+        .avaliacao-anonima input:checked ~ label {
+            color: gold;
+        }
+        .avaliacao-anonima input:hover ~ label {
+            color: gold;
+            transition: 0.3s ease;
+        }
+        .btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        #mensagemFinal {
+            display: none;
+            font-size: 20px;
+            color: green;
+            margin-top: 20px;
+        }
+        #mensagemFinalAnonimo {
+            display: none;
+            font-size: 20px;
+            color: green;
+            margin-top: 20px;
+        }
+        .Inicio{
+            padding: 10px;
+            font-size: 30px;
+            word-spacing: 20px;
+            width: 100% ;
+            height: 10Vh;
+            position: fixed;
+            background: transparent;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;  
+            text-align: center;
+            font-family: 'Arial', sans-serif;
+            box-shadow: 0 4px 2px -2px gray;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+}
+        .imgbarbearia{
+            height: 20%;
+            width: 70%;
+            display: block;
+            margin: auto;
+            padding-top: 10px;
+            margin-top: 20px;
+        }
+        html{
+            scroll-behavior: smooth;
+        }
+        #mensagem2{
+            display: none;
+            font-size: 20px;
+            color: #45a049;
+            margin-top: 20px;
+        }
+        #comentario{
+            display: block;
+            margin: 20px auto;
+            width: 40%;
+            text-align: justify;
+        }
+        .usuario1 {
+    width: 40px;  
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    position: relative;
+}
+.seçãocomentarios{
+    background-color: rgb(255, 255, 255);
+    width: 34%;  
+    margin: 10px;
+    display: inline-block;
+    padding: 10px;
+    vertical-align: top;
+    align-items: center;
+}
+.seçãocomentarios2{
+    background-color: rgb(255, 255, 255);
+    width: 34%;  
+    margin: 10px;
+    display: inline-block;
+    padding: 10px;
+    vertical-align: top;
+}
+.nomeusuario {
+    font-weight: bold;
+    font-size: 18px;
+    display: inline-block;
+}
+.estrelas {
+    font-size: 20px;
+    color: gold;
+}
+details{
+    cursor: pointer;
+    margin: 10px;
+}
+#Agenda {
+   background: transparent;
+   padding: 20px;
+   text-align: center;
+   margin: 30px 0;
+   border-radius: 10px;
+   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+h2 {
+   font-size: 2em;
+   margin-bottom: 20px;
+}
+
+
+.calendario-container {
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: center;
+   margin-top: 50px;
+}
+
+
+
+
+#calendario {
+    width: 35vh;
+    border: 1px solid #ccc;
+    border-radius: 0 0 10px 10px;
+    background-color: #ffffff;
+    padding: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+/* Cabeçalho com os dias da semana */
+#calendario-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+.dia-semana {
+    padding: 5px;
+    background-color: #ffffff;
+    border-radius: 5px;
+}
+
+
+/* Estilo para os dias */
+#calendario-dias {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+/* Estilo para cada dia */
+.dia {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 35px;
+    height: 35px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    transition: background-color 0.3s, transform 0.2s;
+}
+.dia:hover {
+    background-color: #f0f0f0;
+    transform: scale(1.1);
+}
+/* Estilo para dia vazio */
+.dia.vazio {
+    background-color: transparent;
+    cursor: default;
+}
+/* Estolo para dia selecionado */
+.dia.selecionado {
+    background-color: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
+}
+/* Estilo para a área de informações e agendamento */
+.campo-usuario {
+    display: none;
+    margin-top: 20px;
+    text-align: center;
+    width: 80%; /* Reduzindo a largura */
+    max-width: 400px; /* Limitando a largura máxima */
+    padding: 20px;
+    background-color: #fff; /* Fundo branco para destacar a área */
+    border-radius: 10px; /* Cantos arredondados */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    margin-left: auto;
+    margin-right: auto; /* Centralizando */
+}
+.campo-usuario input {
+    width: 100%;
+    padding: 12px; /* Tamanho maior do padding para melhor usabilidade */
+    margin: 10px 0; /* Distância entre os campos */
+    border-radius: 5px; /* Cantos arredondados */
+    border: 1px solid #ddd; /* Borda clara */
+    box-sizing: border-box;
+    font-size: 16px; /* Melhor tamanho de texto */
+    background-color: #f9f9f9; /* Fundo mais suave */
+}
+.campo-usuario input:focus {
+    border-color: #4CAF50; /* Cor de borda ao focar */
+    background-color: #fff; /* Foco no campo deixa o fundo branco */
+}
+.campo-usuario button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+    width: 100%;
+}
+.campo-usuario button:hover {
+    background-color: #45a049;
+}
+/* Estilo para o botão de agendar */
+#btn-agendar {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+}
+#btn-agendar:hover {
+    background-color: #45a049;
+}
+#data-agendada {
+    font-weight: bold;
+    color: #000000;
+    margin-top: 10px;
+}
+#mês{
+background-color: rgb(119, 0, 255);
+width: 37vh;
+height: 5vh;
+font-size: 30px;
+text-align: center;
+color: white;
+padding-top: 10px;
+border-radius: 10px 10px 0 0;
+}
+.container-slider {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+
+.container-images{
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 700px;
+}
+
+
+.slider {
+  opacity: 0;
+  transition: opacity .2s;
+  position: absolute;
+  width: 100%;
+  border-radius: 10px;
+  transition: 2s ease;
+}
+
+
+.on {
+  opacity: 1;
+}
+
+
+#prev-button, #next-button {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  color: white;
+}
+
+
+#prev-button img, #next-button img {
+  width: 100%;
+  height:100%;
+}
+.unidade {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    gap: 20px;
+}  
+
+
+.unidade .texto-esquerda {
+    text-align: left;
+    padding: 20px;
+}
+
+
+.unidade .horario-centro {
+    text-align: center;
+    padding: 20px;
+}
+
+
+.unidade .mapa-container {
+    text-align: center;
+    padding: 20px;
+    grid-column: 3; /* Move para a terceira coluna (direita) */
+    grid-row: 1; /* Move para a primeira linha */
+}
+
+
+.unidade .mapa-centralizado {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+.unidade img {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+
+.unidade h3 {
+    margin-bottom: 10px;
+}
+
+
+.unidade .mapa-container a {
+    /* Adicione aqui os estilos desejados para o link "Veja o Mapa" */
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+
+.unidade .mapa-container a:hover {
+    background-color: #45a049;
+}
+
+
+.local1, .local2, .local3 {
+    border: 2px solid;
+    margin: 20px;
+    box-shadow: 0px 4px 5px 4px gray;
+}
+
+
+.locais {
+    display: inline-block;
+    width: 80%;
+}
+
+
+.mapa-modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+
+.mapa-modal-conteudo {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    position: relative;
+}
+
+
+.fechar-mapa {
+    color: #aaa;
+    position: absolute;
+    top: 0;
+    right: 10px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.mapa-imagem {
+    grid-column: 3; /* Move para a terceira coluna */
+    grid-row: 1 / 3; /* Ocupa as duas linhas */
+    margin-top: 0; /* Remove a margem superior */
+}
+.anonimo-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column; /* Coloca o texto em cima do toggle e imagem */
+    align-items: center;
+}
+
+
+h3 {
+    font-size: 23px;
+}
+
+
+.toggle-container {
+    display: flex;
+    align-items: center; /* Alinha verticalmente o toggle e a imagem */
+    gap: 10px; /* Adiciona o espaço entre o toggle e a imagem */
+}
+
+
+#switchPrincipal{
+    appearance: none;
+    width: 140px;
+    height: 80px;
+    background-color: #707070;
+    border-radius: 50px;
+    cursor: pointer;
+    position: relative;
+    transition: .3s;
+}
+
+
+#switchPrincipal::before {
+    content: "";
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background-color: #d5d5d5;
+    border-radius: 50%;
+    left: 10px;
+    top: 10px;
+    transition: .3s;
+}
+
+
+#switchPrincipal::after {
+    content: "OFF";
+    position: absolute;
+    color: #34384b;
+    font-size: 20px;
+    left: 20px;
+    top: 29px;
+    transition: .3s;
+}
+
+
+#switchPrincipal:checked {
+    background: linear-gradient(91deg, #363636d4, #000000d4);
+}
+
+
+#switchPrincipal:checked:before {
+    background: #000;
+    left: 70px;
+}
+
+
+#switchPrincipal:checked::after {
+    content: "ON";
+    color: #FFF;
+    left: 85px;
+}
+
+
+textarea {
+    width: 40%;
+    height: 100px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin: 20px;
+}
+.envio{
+    border: black solid;
+    margin: 0;
+    box-shadow: 0px 4px 4px 0px gray;
+}
+.avaliar{
+margin-top: 20px;
+    text-align: center;
+    width: 80%; /* Reduzindo a largura */
+    max-width: 400px; /* Limitando a largura máxima */
+    padding: 20px;
+    background-color: #fff; /* Fundo branco para destacar a área */
+    border-radius: 10px; /* Cantos arredondados */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    margin-left: auto;
+    margin-right: auto; /* Centralizando */
+}
+.avaliar input {
+    width: 100%;
+    padding: 12px; /* Tamanho maior do padding para melhor usabilidade */
+    margin: 10px 0; /* Distância entre os campos */
+    border-radius: 5px; /* Cantos arredondados */
+    border: 1px solid #ddd; /* Borda clara */
+    box-sizing: border-box;
+    font-size: 16px; /* Melhor tamanho de texto */
+    background-color: #f9f9f9; /* Fundo mais suave */
+}
+.anonimo{
+    background-color: rgba(29, 29, 29, 0.219);
+}
+
+
+.caixas-av{
+    width: 70%;
+    margin: 20px auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+.config-btn {
+  position: fixed;
+  right: 2%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 10px 10px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 999;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+
+.config-menu {
+  position: fixed;
+  top: 100px;
+  right: 10px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 14px;
+  display: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+  font-size: 14px;
+  color: black;
+}
+
+
+.config-menu label {
+  display: block;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.switch {
+    appearance: none;
+    width: 140px;
+    height: 80px;
+    background-color: #707070;
+    border-radius: 50px;
+    cursor: pointer;
+    position: relative;
+    transition: .3s;
+    outline: none;
+}
+
+
+.switch::before {
+    content: "";
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background-color: #d5d5d5;
+    border-radius: 50%;
+    left: 10px;
+    top: 10px;
+    transition: .3s;
+}
+
+
+.switch::after {
+    content: "OFF";
+    position: absolute;
+    color: #34384b;
+    font-size: 20px;
+    font-weight: bold;
+    left: 20px;
+    top: 29px;
+    transition: .3s;
+}
+
+
+.switch:checked {
+    background: linear-gradient(91deg, #363636d4, #000000d4);
+}
+
+
+.switch:checked::before {
+    background: #000;
+    left: 70px;
+}
+
+
+.switch:checked::after {
+    content: "ON";
+    color: #FFF;
+    left: 85px;
+}
+   </style>
+<script>
+   document.getElementById('switchPrincipal').addEventListener('change', function() {
+    if (this.checked) {
+        // Modo Anônimo
+        document.getElementById('identificacao').style.display = 'none';  // Oculta a parte normal
+        document.getElementById('anonimo').style.display = 'block';     // Exibe a parte anônima
+    } else {
+        // Modo Normal
+        document.getElementById('identificacao').style.display = 'block'; // Exibe a parte normal
+        document.getElementById('anonimo').style.display = 'none';      // Oculta a parte anônima
+    }
+});
+// Função para enviar avaliação normal
+function submitAvaliation() {
+  const estrelas = document.querySelector('input[name="avaliacao"]:checked');
+  const estrelaSelecionada = estrelas ? estrelas.value : "nenhuma";
+
+
+  const nome = document.getElementById("nome").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const comentario = document.getElementById("comentario").value.trim();
+
+
+  const mensagemFinal = document.getElementById("mensagemFinal");
+  mensagemFinal.style.display = "block";
+
+
+  alert(`Avaliação normal: ${estrelaSelecionada} estrelas\nNome: ${nome}\nE-mail: ${email}\nComentário: ${comentario}`);
+}
+
+
+function submitAvaliationAnonimo() {
+  const estrelas = document.querySelector('input[name="avaliacao-anonimo"]:checked');
+  const estrelaSelecionada = estrelas ? estrelas.value : "nenhuma";
+
+
+  const comentario = document.getElementById("comentario-anonimo").value.trim();
+  const mensagemFinal = document.getElementById("mensagemFinalAnonimo");
+
+
+  if (comentario !== "") {
+    mensagemFinal.style.display = "block";
+    alert(`Avaliação anônima: ${estrelaSelecionada} estrelas\nComentário: ${comentario}`);
+  } else {
+    alert("Por favor, escreva um comentário.");
+  }
+}
+
+
+function toggleModoAnonimo() {
+  const anonimo = document.getElementById("anonimo");
+  const identificacao = document.getElementById("identificacao");
+  const isAnonimo = document.getElementById("switchPrincipal").checked;
+
+
+  if (isAnonimo) {
+    anonimo.style.display = "block";
+    identificacao.style.display = "none";
+  } else {
+    anonimo.style.display = "none";
+    identificacao.style.display = "block";
+  }
+}
+
+
+function alternarEnvio() {
+    const modoAnonimoAtivo = document.getElementById("switchPrincipal").checked;
+
+
+    if (modoAnonimoAtivo) {
+        submitAvaliationAnonimo();
+    } else {
+        submitAvaliation();
+    }
+}
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    const diasContainer = document.getElementById("calendario-dias");
+    const dataAgendadaSpan = document.getElementById("data-agendada");
+    const formAgenda = document.querySelector(".campo-usuario");
+    const btnAgendar = document.getElementById("btn-agendar");
+    const campoNome = document.getElementById("nome");
+    const campoEmail = document.getElementById("email");
+    const camposUsuario = document.querySelector(".campo-usuario");
+   
+    // Função para habilitar o botão quando os campos estiverem preenchidos
+    function verificarCampos() {
+        if (campoNome.value.trim() !== "" && campoEmail.value.trim() !== "") {
+            btnAgendar.disabled = false;
+        } else {
+            btnAgendar.disabled = true;
+        }
+    }
+
+
+
+
+    // Verificar os campos sempre que o usuário digitar algo
+    campoNome.addEventListener("input", verificarCampos);
+    campoEmail.addEventListener("input", verificarCampos);
+
+
+
+
+    // Inicializar a verificação
+    verificarCampos();
+
+
+
+
+    const dataAtual = new Date();
+    const dataLimite = new Date();
+    dataLimite.setDate(dataAtual.getDate() + 30);
+
+
+
+
+    function gerarCalendario() {
+        diasContainer.innerHTML = "";
+        const mesAtual = dataAtual.getMonth();
+        const anoAtual = dataAtual.getFullYear();
+        const primeiroDia = new Date(anoAtual, mesAtual, 1);
+        const ultimoDia = new Date(anoAtual, mesAtual + 1, 0);
+        const diasNoMes = ultimoDia.getDate();
+        const primeiroDiaSemana = primeiroDia.getDay();
+
+
+
+
+        for (let i = 0; i < primeiroDiaSemana; i++) {
+            diasContainer.innerHTML += `<div class="dia vazio"></div>`;
         }
 
-        // Embaralha um array (algoritmo de Fisher-Yates)
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
 
-        // Renderiza a tabela de classificação na UI (para pontos corridos e fase de grupos)
-        function renderClassificationTable() {
-            tableBody.innerHTML = '';
-            knockoutBracketDisplay.style.display = 'none'; // Esconde a chave de mata-mata
-            championDisplay.style.display = 'none'; // Esconde o campeão
 
-            if (currentChampionship === 'serie_a' || currentChampionship === 'serie_b') {
-                classificationTitle.textContent = 'Tabela de Classificação';
-                document.getElementById('classification-table').style.display = 'table';
-                teams.sort((a, b) => {
-                    if (b.points !== a.points) return b.points - a.points;
-                    if (b.wins !== a.wins) return b.wins - a.wins;
-                    if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
-                    if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
-                    return a.name.localeCompare(b.name);
+
+        for (let dia = 1; dia <= diasNoMes; dia++) {
+            const dataDia = new Date(anoAtual, mesAtual, dia);
+
+
+
+
+            if (dataDia >= dataAtual && dataDia <= dataLimite) {
+                const diaElemento = document.createElement("div");
+                diaElemento.classList.add("dia");
+                diaElemento.textContent = dia;
+
+
+
+
+                diaElemento.addEventListener("click", function() {
+                    document.querySelectorAll(".dia").forEach(d => d.classList.remove("selecionado"));
+                    diaElemento.classList.add("selecionado");
+                    dataAgendadaSpan.textContent = `${dia}/${mesAtual + 1}/${anoAtual}`;
+                    formAgenda.style.display = "block";
+                    camposUsuario.style.display = "block";
                 });
 
-                teams.forEach((team, index) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${index + 1}</td>
-                        <td>${team.name}</td>
-                        <td>${team.points}</td>
-                        <td>${team.games}</td>
-                        <td>${team.wins}</td>
-                        <td>${team.draws}</td>
-                        <td>${team.losses}</td>
-                        <td>${team.goalsFor}</td>
-                        <td>${team.goalsAgainst}</td>
-                        <td>${team.goalDifference}</td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-            } else if ((currentChampionship === 'libertadores' || currentChampionship === 'mundial') && simulationPhase === 'group_stage') {
-                classificationTitle.textContent = 'Classificação da Fase de Grupos';
-                document.getElementById('classification-table').style.display = 'table';
-                
-                tableBody.innerHTML = ''; // Limpa a tabela para cada grupo
 
-                // Itera sobre os grupos e os times de cada um
-                for (const groupName in currentGroups) {
-                    const groupTeams = Object.values(currentGroups[groupName]); // Pega os objetos de time do grupo
-                    groupTeams.sort((a, b) => {
-                        if (b.points !== a.points) return b.points - a.points;
-                        if (b.wins !== a.wins) return b.wins - a.wins;
-                        if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
-                        if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
-                        return a.name.localeCompare(b.name);
-                    });
 
-                    const groupHeading = document.createElement('tr');
-                    groupHeading.innerHTML = `<td colspan="10" class="lib-group-heading">Grupo ${groupName}</td>`;
-                    tableBody.appendChild(groupHeading);
 
-                    groupTeams.forEach((team, index) => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${index + 1}</td>
-                            <td>${team.name}</td>
-                            <td>${team.points}</td>
-                            <td>${team.games}</td>
-                            <td>${team.wins}</td>
-                            <td>${team.draws}</td>
-                            <td>${team.losses}</td>
-                            <td>${team.goalsFor}</td>
-                            <td>${team.goalsAgainst}</td>
-                            <td>${team.goalDifference}</td>
-                        `;
-                        tableBody.appendChild(row);
-                    });
-                }
-
-            } else {
-                // Esconde a tabela para mata-mata
-                document.getElementById('classification-table').style.display = 'none';
-                classificationTitle.textContent = '';
+                diasContainer.appendChild(diaElemento);
             }
         }
+    }
 
-        // Renderiza os jogos na UI
-        function renderMatches(matchesResults, title = 'Rodada Atual:') {
-            matchesDisplay.innerHTML = '';
-            roundTitleSpan.textContent = title;
 
-            if (matchesResults.length === 0 && currentRound === 0 && simulationPhase === 'group_stage') {
-                matchesDisplay.innerHTML = '<p>Clique em "Simular Próxima Rodada" para começar!</p>';
-                return;
-            }
 
-            matchesResults.forEach(result => {
-                const matchDiv = document.createElement('div');
-                matchDiv.classList.add('match');
-                matchDiv.innerHTML = `
-                    <span class="team-name">${result.homeTeam.name}</span>
-                    <span class="score">${result.homeScore} x ${result.awayScore}</span>
-                    <span class="team-name">${result.awayTeam.name}</span>
-                `;
-                matchesDisplay.appendChild(matchDiv);
-            });
+
+    gerarCalendario();
+
+
+
+
+    btnAgendar.addEventListener("click", function() {
+        const dataSelecionada = dataAgendadaSpan.textContent;
+        const horaSelecionada = document.getElementById("hora").value;
+        const nomeUsuario = campoNome.value.trim();
+        const emailUsuario = campoEmail.value.trim();
+
+
+
+
+        if (nomeUsuario && emailUsuario) {
+            alert(`Agendamento confirmado para ${dataSelecionada} às ${horaSelecionada}.\nNome: ${nomeUsuario}\nE-mail: ${emailUsuario}`);
+        } else {
+            alert("Por favor, preencha seu nome e e-mail para confirmar o agendamento.");
         }
-
-        // Atualiza as estatísticas de dois times após um jogo
-        function updateTeamStats(hTeam, aTeam, homeScore, awayScore) {
-            hTeam.games++;
-            aTeam.games++;
-            hTeam.goalsFor += homeScore;
-            hTeam.goalsAgainst += awayScore;
-            aTeam.goalsFor += awayScore;
-            aTeam.goalsAgainst += homeScore;
-
-            if (homeScore > awayScore) { // Vitória do time da casa
-                hTeam.points += 3;
-                hTeam.wins++;
-                aTeam.losses++;
-            } else if (awayScore > homeScore) { // Vitória do time de fora
-                aTeam.points += 3;
-                aTeam.wins++;
-                hTeam.losses++;
-            } else { // Empate
-                hTeam.points += 1;
-                aTeam.points += 1;
-                hTeam.draws++;
-                aTeam.draws++;
-            }
-            hTeam.goalDifference = hTeam.goalsFor - hTeam.goalsAgainst;
-            aTeam.goalDifference = aTeam.goalsFor - aTeam.goalsAgainst;
-        }
-
-        // Simula um jogo de mata-mata
-        function simulateKnockoutMatch(homeTeam, awayTeam) {
-            const homeScore = getRandomScore();
-            const awayScore = getRandomScore();
-
-            let winner = null;
-            if (homeScore > awayScore) {
-                winner = homeTeam;
-            } else if (awayScore > homeScore) {
-                winner = awayTeam;
-            } else { // Empate, simula pênaltis (vencedor aleatório)
-                winner = Math.random() > 0.5 ? homeTeam : awayTeam;
-            }
-            return { homeTeam, awayTeam, homeScore, awayScore, winner };
-        }
-
-        // Renderiza a chave de mata-mata
-        function renderKnockoutBracket(results, roundName, winners) {
-            document.getElementById('classification-table').style.display = 'none';
-            classificationTitle.textContent = '';
-            matchesDisplay.innerHTML = ''; // Limpa os resultados de jogos de rodada
-            knockoutBracketDisplay.style.display = 'block';
-
-            let bracketHTML = `<div class="round-title">${roundName}</div><div class="knockout-bracket">`;
-            results.forEach(match => {
-                bracketHTML += `
-                    <div class="match">
-                        <span class="team-name">${match.homeTeam.name}</span>
-                        <span class="score">${match.homeScore} x ${match.awayScore}</span>
-                        <span class="team-name">${match.awayTeam.name}</span>
-                    </div>
-                `;
-            });
-            bracketHTML += `</div>`;
-
-            if (roundName === 'Final') {
-                bracketHTML += `<div class="champion-text">Vencedor: ${winners[0].name}</div>`;
-            }
-            knockoutBracketDisplay.innerHTML = bracketHTML;
-        }
-
-        // Exibe o campeão
-        function displayChampion(championName) {
-            championDisplay.textContent = `CAMPEÃO: ${championName}`;
-            championDisplay.style.display = 'block';
-        }
-
-        // --- Setup Inicial do Campeonato ---
-        function setupChampionship(championshipId) {
-            currentChampionship = championshipId;
-            // Cria uma nova lista de times com estatísticas zeradas
-            teams = teamsData[championshipId].map(team => ({
-                ...team,
-                points: 0,
-                games: 0,
-                wins: 0,
-                draws: 0,
-                losses: 0,
-                goalsFor: 0,
-                goalsAgainst: 0,
-                goalDifference: 0,
-                group: '', // Reset para todos os times
-            }));
-            currentRound = 0;
-            simulationPhase = 'group_stage'; // Reinicia a fase
-            knockoutParticipants = [];
-            lastRoundWinners = [];
-            currentGroups = {}; // Reinicia os grupos
-
-            // Configurações por campeonato
-            if (championshipId === 'serie_a' || championshipId === 'serie_b') {
-                totalRounds = 38;
-                roundTitleSpan.textContent = 'Rodada Atual:';
-                simulateAllButton.style.display = 'inline-block';
-                simulateButton.textContent = 'Simular Próxima Rodada';
-            } else if (championshipId === 'libertadores') {
-                totalRounds = 6; // Fase de grupos tem 6 rodadas
-                roundTitleSpan.textContent = 'Fase de Grupos - Rodada:';
-                simulateAllButton.style.display = 'inline-block';
-                simulateButton.textContent = 'Simular Próxima Rodada';
-                assignGroups(teamsData.libertadores, 8); // Atribui 32 times a 8 grupos
-            } else if (championshipId === 'mundial') {
-                totalRounds = 3; // Fase de grupos do Mundial (simplificado em 3 rodadas)
-                roundTitleSpan.textContent = 'Fase de Grupos - Rodada:';
-                simulateAllButton.style.display = 'none';
-                simulateButton.textContent = 'Simular Próxima Rodada';
-                assignGroups(teamsData.mundial, 8); // Atribui 32 times a 8 grupos
-            }
-
-            simulateButton.disabled = false;
-            resetButton.disabled = false;
-            matchesDisplay.innerHTML = '<p>Clique em "Simular Próxima Rodada" para começar!</p>';
-            roundNumberSpan.textContent = currentRound;
-            knockoutBracketDisplay.innerHTML = '';
-            championDisplay.style.display = 'none';
-            renderClassificationTable(); // Renderiza a tabela inicial vazia/zerada
-        }
-
-        // --- Lógica para Série A e Série B (Pontos Corridos) ---
-        function generateRoundMatchesPointsCorridos() {
-            let availableTeams = [...teams]; // Usar o array 'teams' do estado atual
-            let matches = [];
-            shuffleArray(availableTeams);
-
-            for (let i = 0; i < availableTeams.length; i += 2) {
-                if (availableTeams[i + 1]) {
-                    matches.push({
-                        home: availableTeams[i],
-                        away: availableTeams[i + 1]
-                    });
-                }
-            }
-            return matches;
-        }
-
-        function simulatePointsCorridosRound() {
-            if (currentRound >= totalRounds) {
-                alert('O campeonato terminou!');
-                simulateButton.disabled = true;
-                simulateAllButton.disabled = true;
-                displayChampion(teams[0].name);
-                return;
-            }
-
-            currentRound++;
-            roundNumberSpan.textContent = currentRound;
-
-            const roundMatches = generateRoundMatchesPointsCorridos(); // Já pega do array 'teams'
-            let simulatedMatchResults = [];
-
-            roundMatches.forEach(match => {
-                const homeScore = getRandomScore();
-                const awayScore = getRandomScore();
-                // Os objetos 'match.home' e 'match.away' já são referências diretas do array 'teams'
-                updateTeamStats(match.home, match.away, homeScore, awayScore);
-                simulatedMatchResults.push({ homeTeam: match.home, awayTeam: match.away, homeScore, awayScore });
-            });
-
-            renderMatches(simulatedMatchResults);
-            renderClassificationTable();
-        }
-
-        // --- Lógica de Grupos (Compartilhada por Libertadores e Mundial) ---
-
-        // Atribui times aos grupos fixos e zera estatísticas de grupo
-        function assignGroups(sourceTeams, numGroups) {
-            currentGroups = {};
-            const groupNames = Array.from({length: numGroups}, (_, i) => String.fromCharCode(65 + i)); // A, B, C...
-
-            // Resetar teams e criar cópias com base nos dados iniciais
-            teams = sourceTeams.map(team => ({
-                ...team,
-                points: 0, games: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, group: ''
-            }));
-            
-            let shuffledTeams = shuffleArray([...teams]); // Embaralha para distribuir nos grupos
-
-            groupNames.forEach(groupName => {
-                currentGroups[groupName] = {};
-                for (let i = 0; i < 4; i++) {
-                    const team = shuffledTeams.shift();
-                    if (team) {
-                        team.group = groupName;
-                        currentGroups[groupName][team.id] = team;
-                    }
-                }
-            });
-            // 'teams' continua sendo a lista flat de todos os times, mas 'currentGroups' mantém a estrutura por grupo
-        }
-
-        // Gera jogos da fase de grupos para uma rodada específica (para 4 times por grupo)
-        function generateGroupStageMatches(round) {
-            const matchesForRound = [];
-            for (const groupName in currentGroups) {
-                const groupTeams = Object.values(currentGroups[groupName]);
-                let groupMatches = [];
-                // Calendário de 4 times por grupo para 3 ou 6 rodadas (ida e volta)
-                // Rodadas 1-3: Ida
-                // Rodadas 4-6: Volta (se aplicável, para 6 rodadas)
-                if (round === 1) { groupMatches.push({ home: groupTeams[0], away: groupTeams[1] }, { home: groupTeams[2], away: groupTeams[3] }); }
-                else if (round === 2) { groupMatches.push({ home: groupTeams[0], away: groupTeams[2] }, { home: groupTeams[1], away: groupTeams[3] }); }
-                else if (round === 3) { groupMatches.push({ home: groupTeams[0], away: groupTeams[3] }, { home: groupTeams[1], away: groupTeams[2] }); }
-                else if (round === 4) { groupMatches.push({ home: groupTeams[1], away: groupTeams[0] }, { home: groupTeams[3], away: groupTeams[2] }); } // Volta
-                else if (round === 5) { groupMatches.push({ home: groupTeams[2], away: groupTeams[0] }, { home: groupTeams[3], away: groupTeams[1] }); } // Volta
-                else if (round === 6) { groupMatches.push({ home: groupTeams[3], away: groupTeams[0] }, { home: groupTeams[2], away: groupTeams[1] }); } // Volta
-                
-                matchesForRound.push(...groupMatches);
-            }
-            return matchesForRound;
-        }
-
-        function simulateGroupRound() {
-            // Verifica se a fase de grupos já terminou
-            if (currentRound >= totalRounds) {
-                // Transiciona para o mata-mata
-                simulationPhase = 'round_of_16';
-                roundTitleSpan.textContent = 'Oitavas de Final';
-                roundNumberSpan.textContent = '';
-                simulateButton.textContent = 'Simular Oitavas de Final';
-                simulateAllButton.style.display = 'none';
-                matchesDisplay.innerHTML = '<p>Fase de grupos encerrada. Clique para simular as oitavas de final.</p>';
-                renderClassificationTable();
-
-                // Determina os classificados para o mata-mata (1º e 2º de cada grupo)
-                knockoutParticipants = [];
-                for (const groupName in currentGroups) {
-                    const groupTeams = Object.values(currentGroups[groupName]);
-                    groupTeams.sort((a, b) => {
-                        if (b.points !== a.points) return b.points - a.points;
-                        if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
-                        return a.name.localeCompare(b.name);
-                    });
-                    knockoutParticipants.push(groupTeams[0], groupTeams[1]);
-                }
-                shuffleArray(knockoutParticipants); // Sorteia os confrontos das oitavas
-                return;
-            }
-
-            currentRound++;
-            roundNumberSpan.textContent = currentRound;
-
-            let simulatedMatchResults = [];
-            const roundMatches = generateGroupStageMatches(currentRound); // Gerar jogos para a rodada atual
-
-            roundMatches.forEach(match => {
-                const homeScore = getRandomScore();
-                const awayScore = getRandomScore();
-                updateTeamStats(match.home, match.away, homeScore, awayScore);
-                simulatedMatchResults.push({ homeTeam: match.home, awayTeam: match.away, homeScore, awayScore });
-            });
-
-            renderMatches(simulatedMatchResults, `Fase de Grupos - Rodada ${currentRound}:`);
-            renderClassificationTable();
-        }
-
-        // Gera os confrontos para uma fase de mata-mata
-        function generateKnockoutMatches(participants) {
-            let matches = [];
-            shuffleArray(participants); // Sorteia os times para os confrontos
-            for (let i = 0; i < participants.length; i += 2) {
-                if (participants[i + 1]) { // Garante que há um par
-                    matches.push({
-                        home: participants[i],
-                        away: participants[i + 1]
-                    });
-                }
-            }
-            return matches;
-        }
-
-        // Lógica para simular uma fase de mata-mata (oitavas, quartas, semi, final)
-        function simulateKnockoutPhase() {
-            let currentPhaseParticipants = [];
-            let nextPhaseTitle = '';
-            let nextPhaseButtonText = '';
-            let nextSimulationPhase = '';
-
-            if (simulationPhase === 'round_of_16') {
-                currentPhaseParticipants = knockoutParticipants; // Vencedores dos grupos (inicialmente)
-                nextPhaseTitle = 'Quartas de Final';
-                nextPhaseButtonText = 'Simular Quartas de Final';
-                nextSimulationPhase = 'quarter_finals';
-            } else if (simulationPhase === 'quarter_finals') {
-                currentPhaseParticipants = lastRoundWinners;
-                nextPhaseTitle = 'Semifinal';
-                nextPhaseButtonText = 'Simular Semifinal';
-                nextSimulationPhase = 'semi_finals';
-            } else if (simulationPhase === 'semi_finals') {
-                currentPhaseParticipants = lastRoundWinners;
-                nextPhaseTitle = 'Final';
-                nextPhaseButtonText = 'Simular Final';
-                nextSimulationPhase = 'final';
-            } else if (simulationPhase === 'final') {
-                currentPhaseParticipants = lastRoundWinners;
-                nextPhaseTitle = 'Final';
-                nextPhaseButtonText = 'Reiniciar Simulação';
-                nextSimulationPhase = 'completed';
-                simulateButton.disabled = true; // Desabilita após a final
-            } else {
-                return; // Campeonato já concluído
-            }
-
-            if (currentPhaseParticipants.length === 0) {
-                alert("Erro: Não há participantes para esta fase. Reinicie a simulação.");
-                return;
-            }
-
-            let currentRoundMatches = generateKnockoutMatches(currentPhaseParticipants);
-            let simulatedMatchResults = [];
-            let currentWinners = [];
-
-            currentRoundMatches.forEach(match => {
-                const result = simulateKnockoutMatch(match.home, match.away);
-                simulatedMatchResults.push(result);
-                currentWinners.push(result.winner);
-            });
-            lastRoundWinners = currentWinners; // Atualiza os vencedores para a próxima fase
-
-            renderMatches(simulatedMatchResults, nextPhaseTitle);
-            renderKnockoutBracket(simulatedMatchResults, nextPhaseTitle, currentWinners);
-
-            simulationPhase = nextSimulationPhase;
-            simulateButton.textContent = nextPhaseButtonText;
-
-            if (simulationPhase === 'completed') {
-                displayChampion(lastRoundWinners[0].name);
-            }
-        }
+    });
+});
+const slider = document.querySelectorAll('.slider');
+    const btnPrev = document.getElementById('prev-button');
+    const btnNext = document.getElementById('next-button');
+   
+    let currentSlide = 0;
+   
+    function hideSlider() {
+      slider.forEach(item => item.classList.remove('on'))
+    }
+   
+    function showSlider() {
+      slider[currentSlide].classList.add('on')
+    }
+   
+    function nextSlider() {
+      hideSlider()
+      if(currentSlide === slider.length -1) {
+        currentSlide = 0
+      } else {
+        currentSlide++
+      }
+      showSlider()
+    }
+   
+    function prevSlider() {
+      hideSlider()
+      if(currentSlide === 0) {
+        currentSlide = slider.length -1
+      } else {
+        currentSlide--
+      }
+      showSlider()
+    }
+   
+    btnNext.addEventListener('click', nextSlider)
+    btnPrev.addEventListener('click', prevSlider)
 
 
-        // --- Função Principal de Simulação ---
-        function simulateNextStep() {
-            if (currentChampionship === 'serie_a' || currentChampionship === 'serie_b') {
-                simulatePointsCorridosRound();
-            } else if (currentChampionship === 'libertadores' || currentChampionship === 'mundial') {
-                if (simulationPhase === 'group_stage') {
-                    simulateGroupRound();
-                } else {
-                    simulateKnockoutPhase(); // Usar a lógica genérica de mata-mata
-                }
-            }
-        }
+    const linksMapa = document.querySelectorAll('.abrir-mapa');
+const modalMapa = document.getElementById('mapa-modal');
+const iframeMapa = document.getElementById('mapa-iframe');
+const botaoFecharMapa = document.querySelector('.fechar-mapa');
 
-        // --- Função de Reiniciar Simulação Geral ---
-        function resetSimulation() {
-            championDisplay.style.display = 'none';
-            knockoutBracketDisplay.innerHTML = '';
-            lastRoundWinners = [];
-            knockoutParticipants = [];
-            setupChampionship(championshipSelect.value); // Reseta para o campeonato selecionado
-        }
 
-        function simulateAllRounds() {
-            simulateButton.disabled = true;
-            simulateAllButton.disabled = true;
+linksMapa.forEach(link => {
+  link.addEventListener('click', (event) => {
+    event.preventDefault();
+    const urlMapa = link.getAttribute('data-mapa');
+    iframeMapa.src = urlMapa;
+    modalMapa.style.display = 'block';
+  });
+});
 
-            let simulationInterval;
-            let currentSimulatedRound = currentRound;
 
-            if (currentChampionship === 'libertadores' && simulationPhase !== 'group_stage') {
-                alert("Para Libertadores (mata-mata), simule as fases passo a passo.");
-                simulateButton.disabled = false;
-                simulateAllButton.disabled = false;
-                return;
-            }
-            if (currentChampionship === 'mundial' && simulationPhase !== 'group_stage') {
-                alert("O Mundial de Clubes é simulado passo a passo.");
-                simulateButton.disabled = false;
-                simulateAllButton.disabled = false;
-                return;
-            }
+botaoFecharMapa.addEventListener('click', () => {
+  modalMapa.style.display = 'none';
+  iframeMapa.src = ''; // Limpa o iframe
+});
 
-            simulationInterval = setInterval(() => {
-                let shouldContinue = false;
-                if ((currentChampionship === 'serie_a' || currentChampionship === 'serie_b') && currentSimulatedRound < totalRounds) {
-                    simulatePointsCorridosRound();
-                    currentSimulatedRound = currentRound;
-                    shouldContinue = true;
-                } else if ((currentChampionship === 'libertadores' || currentChampionship === 'mundial') && simulationPhase === 'group_stage' && currentSimulatedRound < totalRounds) {
-                    simulateGroupRound();
-                    currentSimulatedRound = currentRound;
-                    shouldContinue = true;
-                }
-                
-                // Condição para parar o intervalo
-                if (!shouldContinue || currentRound >= totalRounds || (currentChampionship === 'libertadores' && simulationPhase !== 'group_stage') || (currentChampionship === 'mundial' && simulationPhase !== 'group_stage')) {
-                    clearInterval(simulationInterval);
-                    simulateButton.disabled = false;
-                    simulateAllButton.disabled = false;
-                    if ((currentChampionship === 'libertadores' || currentChampionship === 'mundial') && simulationPhase === 'round_of_16') {
-                         alert('Fase de grupos concluída! Clique para simular as oitavas.');
-                    } else if (currentRound >= totalRounds) {
-                        alert('Simulação do campeonato concluída!');
-                    }
-                }
-            }, 300); // Intervalo de 300ms entre as rodadas
-        }
 
-        // --- Event Listeners ---
-        championshipSelect.addEventListener('change', (event) => {
-            setupChampionship(event.target.value);
-        });
-        simulateButton.addEventListener('click', simulateNextStep);
-        resetButton.addEventListener('click', resetSimulation);
-        simulateAllButton.addEventListener('click', simulateAllRounds);
+window.addEventListener('click', (event) => {
+  if (event.target == modalMapa) {
+    modalMapa.style.display = 'none';
+    iframeMapa.src = ''; // Limpa o iframe
+  }
+});
+const toggleSwitch = document.getElementById("switchPrincipal"); // Ajuste para usar o id correto
+const identificacao = document.getElementById("identificacao");
+const anonimo = document.getElementById("anonimo");
 
-        // --- Inicialização ---
-        document.addEventListener('DOMContentLoaded', () => {
-            setupChampionship('serie_b'); // Inicia com a Série B por padrão
-        });
+
+// Função para atualizar a visibilidade das seções com base no estado do checkbox
+function atualizarVisibilidade() {
+    if (toggleSwitch.checked) {
+        // Se o checkbox principal estiver marcado (ON), exibe a versão anônima e oculta a de identificação
+        anonimo.style.display = "block"; // Exibe a div anônima
+        identificacao.style.display = "none"; // Oculta a div com identificação
+    } else {
+        // Se o checkbox principal estiver desmarcado (OFF), exibe a versão de identificação e oculta a anônima
+        anonimo.style.display = "none"; // Oculta a div anônima
+        identificacao.style.display = "block"; // Exibe a div com identificação
+    }
+}
+
+
+// Adiciona o evento de mudança no toggleSwitch
+
+
+const toggle = document.getElementById("themeToggle");
+    const configMenu = document.getElementById("configMenu");
+
+
+    function toggleMenu() {
+      configMenu.style.display = configMenu.style.display === "block" ? "none" : "block";
+    }
+
+
+    toggle.addEventListener("change", () => {
+      document.body.classList.toggle("light", toggle.checked);
+    });
+
+
+    // Garante que o tema escuro inicie por padrão
+    window.addEventListener("DOMContentLoaded", () => {
+      document.body.classList.remove("light");
+      toggle.checked = false;
+    });
+
+
     </script>
-</body>
-</html>
+
+
+
+
+
